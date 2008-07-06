@@ -1,0 +1,17 @@
+## Interface: 20400
+## Title: OpenRolls
+## Author: Dennis Zickefoose, Jr
+## Version: 0.2
+## Notes: Master loot simplification
+## eMail: dennis.zickefoose@gmail.com
+## URL: http://openrolls.googlecode.com/
+## DefaultState: Enabled
+## LoadOnDemand: 0
+## SavedVariables: OpenRollsData
+## OptionalDeps: Ace3
+## X-Embeds: Ace3
+
+embeds.xml
+
+OpenRolls.lua
+OpenRollsSummaryFrame.lua
