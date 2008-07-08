@@ -30,50 +30,15 @@ group:SetPoint("TOP", title, "BOTTOM", 0, -12)
 
 local strings = {}
 for i = 1, 40 do
-    local stringframe = CreateFrame("frame", "OpenRollsSummaryString" .. i, group)
-    stringframe:SetPoint("LEFT", group, "LEFT")
-    stringframe:SetPoint("RIGHT", group, "RIGHT")
-    stringframe:EnableMouse()
-    stringframe:SetScript("OnEnter", function(frame, ...)
-        local GameTooltip = GameTooltip
-        GameTooltip:SetOwner(frame, "ANCHOR_TOPLEFT")
-        local n = frame.name:GetText()
-        local nr, ng, nb = frame.name:GetTextColor()
-        local r = frame.roll:GetText()
-        local rr, rg, rb = frame.roll:GetTextColor()
-        GameTooltip:AddDoubleLine(n, r, nr, ng, nb, rr, rg, rb)
-        for single, func in OpenRolls:SummaryHooks() do
-            if single then
-                GameTooltip:AddLine(func(n, r))
-            else
-                GameTooltip:AddDoubleLine(func(n, r))
-            end
-        end
-        GameTooltip:AddLine("This is a single line", 1, 0, 1)
-        GameTooltip:Show()
-    end)    
-    stringframe:SetScript("OnLeave", function(frame, ...) GameTooltip:Hide() end)
-    
-    local name = stringframe:CreateFontString("OpenRollsSummaryName" .. i, "OVERLAY", "GameFontNormal")
-    name:SetJustifyH("LEFT")
-    name:SetPoint("TOPLEFT", stringframe, "TOPLEFT")
-    name:SetText("Not Yet Filled")
-    stringframe.name = name
-    
-    local roll = stringframe:CreateFontString("OpenRollsSummaryRoll" .. i, "OVERLAY", "GameFontNormal")
-    roll:SetJustifyH("RIGHT")
-    roll:SetPoint("TOPRIGHT", stringframe, "TOPRIGHT")
-    roll:SetText(i)
-    stringframe.roll = roll
-    
-    stringframe:SetHeight(name:GetHeight())
-    
-    strings[i] = {frame = stringframe, name = name, roll = roll}
+    local str = OpenRolls:CreateSummaryLine("OpenRollsSummaryString" .. i, group, "Not Yet Filled")
+    str:SetPoint("LEFT", group, "LEFT")
+    str:SetPoint("RIGHT", group, "RIGHT")
+    strings[i] = str
 end
 
-strings[1].frame:SetPoint("TOP", group, "TOP")
+strings[1]:SetPoint("TOP", group, "TOP")
 for i = 2, 40 do
-    strings[i].frame:SetPoint("TOP", strings[i-1].frame, "BOTTOM")
+    strings[i]:SetPoint("TOP", strings[i-1], "BOTTOM")
 end
 
 local close = CreateFrame("Button", "OpenRollsSummaryClose", frame, "UIPanelButtonTemplate")
@@ -86,7 +51,7 @@ close:SetScript("OnClick", function(frame)
     frame:GetParent():Hide()
 end)
 
-group:SetHeight(strings[1].frame:GetTop() - strings[40].frame:GetBottom())
+group:SetHeight(strings[1]:GetTop() - strings[40]:GetBottom())
 frame:SetHeight(title:GetTop() - close:GetBottom() + 24)
 
 frame:Hide()
@@ -103,47 +68,25 @@ local function RollValue(roll)
     end
 end
 
-local function Color()
-    local str, val
-    for i = 1, Group.Number() do
-        str = strings[i]
-        val = RollValue(str.roll:GetText())
-        if val == -1 or val == 0 then
-            str.name:SetTextColor(0.5, 0.5, 0.5)
-            str.roll:SetTextColor(0.5, 0.5, 0.5)
-        elseif val == -2 then 
-            str.name:SetTextColor(1, 0, 0)
-            str.roll:SetTextColor(1, 0, 0)
-        else
-            str.name:SetTextColor(0, 1, 0)
-            str.roll:SetTextColor(0, 1, 0)
-        end
-    end
-end
+local debugz = true
 
-local function Sort(array)
-    local values = {}
-    for i, str in pairs(strings) do
-        values[i] = RollValue(str.roll:GetText())
-    end
+local function Sort()
     --this code was basically stolen from the wikipedia article on insertion sort
     for i = 2, Group.Number() do
-        local value = values[i]
-        local name = strings[i].name:GetText()
-        local roll = strings[i].roll:GetText()
+        local value = strings[i]
         local j = i - 1
-        while j >= 1 and values[j] < value do
-            values[j + 1] = values[j]
-            strings[j+1].name:SetText(strings[j].name:GetText())
-            strings[j+1].roll:SetText(strings[j].roll:GetText())
-            j = j-1
+        while j >= 1 and strings[j]:Value() < value:Value() do--strings[j]:Compare(value) do
+            strings[j + 1] = strings[j]
+            j = j - 1
         end
-        values[j+1] = value
-        strings[j+1].name:SetText(name)
-        strings[j+1].roll:SetText(roll)
+        strings[j+1] = value
     end
     
-    Color()
+    strings[1]:SetPoint("TOP", group, "TOP")
+    for i = 2, 40 do
+        strings[i]:SetPoint("TOP", strings[i-1], "BOTTOM")
+    end
+    
 --[[insertionSort(array A)
     for i = 1 to length[A]-1 do
     begin
@@ -160,9 +103,9 @@ end
 
 function OpenRolls:AssignRoll(name, roll)
     for i = 1, Group.Number() do
-        if strings[i].name:GetText() == name then
-            if RollValue(strings[i].roll:GetText()) > 0 then return false end
-            strings[i].roll:SetText(roll)
+        if strings[i]:GetPlayer() == name then
+            if strings[i]:Value() > 0 then return false end
+            strings[i]:SetRoll(roll)
             Sort()
             return true
         end
@@ -172,7 +115,7 @@ end
 
 function OpenRolls:HasEverybodyRolled()
     for i = 1, Group.Number() do
-        if RollValue(strings[i].roll:GetText()) == -1 then 
+        if strings[i]:Value() == -1 then 
             return false
         end
     end
@@ -181,16 +124,16 @@ end
 
 function OpenRolls:PrintWinners(item, quantity)
     OpenRolls:Communicate("Roll over for " .. quantity .. "x" .. item)
-    if RollValue(strings[1].roll:GetText()) < 1 then
+    if strings[1]:Value() < 1 then
         OpenRolls:Communicate("   Nobody rolled")
         return
     end
     
     for i = 1, quantity do
-        if RollValue(strings[i].roll:GetText()) < 1 then
+        if strings[i]:Value() < 1 then
             return
         end
-        OpenRolls:Communicate(strings[i].name:GetText() .. " rolled " .. strings[i].roll:GetText())
+        OpenRolls:Communicate(strings[i]:GetPlayer() .. " rolled " .. strings[i]:Value())
     end
 end
 
@@ -207,8 +150,8 @@ end
 function OpenRolls:EndRoll(item, quantity)
     title:SetText("Roll finished for " .. quantity .. "x" .. item)
     for i = 1, Group.Number() do
-        if strings[i].roll:GetText() == "Waiting..." then
-            strings[i].roll:SetText("Passed")
+        if strings[i]:Value() == -1 then
+            strings[i]:PassRoll()
         end
     end
     OpenRolls:PrintWinners(item, quantity)
@@ -220,25 +163,21 @@ end
 function OpenRolls:FillSummary(titl)
     title:SetText(titl)
     local height = 0
-    local del = strings[1].name:GetHeight()
+    local del = strings[1]:GetHeight()
     local i = 0
     for name, _, online in Group.Members() do
         i = i + 1
-        strings[i].name:SetText(name)
+        strings[i]:SetPlayer(name)
         height = height + del
         if online then
-            strings[i].name:SetTextColor(0.5, 0.5, 0.5)
-            strings[i].roll:SetTextColor(0.5, 0.5, 0.5)
-            strings[i].roll:SetText("Waiting...")
+            strings[i]:ClearRoll()
         else
-            strings[i].name:SetTextColor(1, 0, 0)
-            strings[i].roll:SetTextColor(1, 0, 0)
-            strings[i].roll:SetText("Offline")
+            strings[i]:SetOffline()
         end
-        strings[i].frame:Show()
+        strings[i]:Show()
     end
     for i = Group.Number()+1, 40 do
-        strings[i].frame:Hide()
+        strings[i]:Hide()
     end
     group:SetHeight(height)
     frame:SetHeight(title:GetTop() - close:GetBottom() + 24)
@@ -267,7 +206,7 @@ function OpenRolls:SummaryHooks()
 end
 
 function OpenRolls:ShowSummary()
-    if strings[1].name:GetText() == "Not Yet Filled" then
+    if strings[1]:GetPlayer() == "Not Yet Filled" then
         OpenRolls:FillSummary("No item")
     end
     frame:Show()
