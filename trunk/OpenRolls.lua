@@ -164,7 +164,6 @@ local function RepositionLootWindows()
     lewt[1]:ClearAllPoints()
     lewt[1]:SetPoint("LEFT", LootFrame, "RIGHT", -66, 0)
     lewt[1]:SetPoint("TOP", NamesFrame.frame, "BOTTOM", -4, 0)
-    OpenRolls:Print("Repositioning " .. lewt[1].slot)
     for i = 2, #lewt do
         lewt[i]:ClearAllPoints()
         lewt[i]:SetPoint("TOPLEFT", lewt[i-1], "BOTTOMLEFT")
