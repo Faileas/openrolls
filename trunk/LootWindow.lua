@@ -1,4 +1,4 @@
-OpenRolls = LibStub("AceAddon-3.0"):GetAddon("OpenRolls")
+local OpenRolls = LibStub("AceAddon-3.0"):GetAddon("OpenRolls")
 
 do
     local function AttachMouseoverText(frame, text, r, g, b, a)
@@ -113,7 +113,7 @@ do
         open:SetText("Open")
         open:SetScript("OnClick", function(frame, ...)
             local parent = frame:GetParent()
-            OpenRolls:Roll(GetLootSlotLink(parent.slot), 1)
+            OpenRolls:Roll(GetLootSlotLink(parent.slot), 1, tonumber(duration:GetText()))
         end)
         
         local raid = CreateFrame("button", framename .. "Raid", self, "UIPanelButtonTemplate")

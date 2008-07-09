@@ -53,7 +53,7 @@ local function CreateNameFrame()
         GameTooltip:SetText("Name of character to disenchant loot", 1, 1, 1, 1)
         GameTooltip:Show()
     end)
-    BankName:SetScript("OnLeave", function(frame, ...) GameTooltip:Hide() end)
+    ChantName:SetScript("OnLeave", function(frame, ...) GameTooltip:Hide() end)
     
     local ChantString = frame:CreateFontString("OpenRollsChantString", "OVERLAY", "GameFontNormal")
     ChantString:SetPoint("BOTTOMLEFT", ChantName, "TOPLEFT")
@@ -81,22 +81,35 @@ function OpenRolls:GetBanker()
 end
 
 function OpenRolls:InitializeSavedVariables()
-    if OpenRollsData.ShowSummaryWhenRollsOver == nil then
-        OpenRollsData.ShowSummaryWhenRollsOver = true
+    local function Init(var, initial) 
+        if OpenRollsData[var] == nil then
+            OpenRollsData[var] = initial
+        end
     end
+    Init("ShowSummaryWhenRollsOver", true)
+    Init("ShowLootWindows", "whenML")
+    Init("Disenchanter", "")
+    Init("Banker", "")
 end
 
 function OpenRolls:OnInitialize()
     OpenRolls:InitializeSavedVariables()
+    NamesFrame.bankName:SetText(OpenRollsData.Banker)
+    NamesFrame.chantName:SetText(OpenRollsData.Disenchanter)
 end
 
-local function Roll(item, quantity)
-    --SummaryFrame:SetTitle(quantity .. "x" .. item)
+function OpenRolls:PLAYER_LEAVING_WORLD()
+    OpenRollsData.Disenchanter = NamesFrame.chantName:GetText()
+    OpenRollsData.Banker = NamesFrame.bankName:GetText()
+end
+
+function OpenRolls:Roll(item, quantity, duration)
+    if duration == nil or duration <= 0 then duration = 30 end
     OpenRolls:StartRoll(item, quantity)
     local timer = OpenRolls:ScheduleTimer(function() 
         OpenRolls:EndRoll(item, quantity)
         OpenRolls:UnregisterMessage("RollTrack_Roll")
-    end, 30)
+    end, duration)
     
     OpenRolls:RegisterMessage("RollTrack_Roll", function(msg, char, roll, min, max)
         if not OpenRolls:AssignRoll(char, roll) then
@@ -124,13 +137,13 @@ end
 local function CommandLine(str)
     local found, _, item, quantity = str:find("^(" .. ItemLinkPattern ..")%s*(%d*)$")
     if found then
-        Roll(item, tonumber(quantity) or 1)
+        OpenRolls:Roll(item, tonumber(quantity) or 1)
         return
     end
     
     found, _, quantity, item = str:find("^(%d+)%s*x%s*(" .. ItemLinkPattern ..")$")
     if found then
-        Roll(item, tonumber(quantity) or 1)
+        OpenRolls:Roll(item, tonumber(quantity) or 1)
         return
     end
     
@@ -146,22 +159,33 @@ OpenRolls:RegisterChatCommand("openroll", CommandLine)
 
 local lewt = {}
 
-function OpenRolls:LOOT_OPENED()
-    NamesFrame.frame:Show()
-    local first = true
-    lewt = {}
-    for i = 1, GetNumLootItems() do
-        local item = OpenRolls:CreateLootWindow("OpenRollsLootWindow" .. i, UIParent, i)
-        --table.insert(lewt, OpenRolls:CreateLootWindow("OpenRollsLootWindow" .. i, UIParent, i))
-        if #lewt == 0 then
-            item:SetPoint("LEFT", LootFrame, "RIGHT", -66, 0)
-            item:SetPoint("TOP", NamesFrame.frame, "BOTTOM", -4, 0)
-        else
-            item:SetPoint("TOPLEFT", lewt[#lewt], "BOTTOMLEFT")
-        end
-        table.insert(lewt, item)
-        item:Show()
+local function RepositionLootWindows()
+    if #lewt == 0 then return end
+    lewt[1]:ClearAllPoints()
+    lewt[1]:SetPoint("LEFT", LootFrame, "RIGHT", -66, 0)
+    lewt[1]:SetPoint("TOP", NamesFrame.frame, "BOTTOM", -4, 0)
+    OpenRolls:Print("Repositioning " .. lewt[1].slot)
+    for i = 2, #lewt do
+        lewt[i]:ClearAllPoints()
+        lewt[i]:SetPoint("TOPLEFT", lewt[i-1], "BOTTOMLEFT")
     end
+end
+
+function OpenRolls:LOOT_OPENED()
+    if OpenRollsData.ShowLootWindows == 'never' then return end
+    if OpenRollsData.ShowLootWindows == 'whenML' and (select(2, GetLootMethod())) ~= 0 then return end
+    
+    NamesFrame.frame:Show()
+    lewt = {}
+    local threshold = GetLootThreshold()
+    for i = 1, GetNumLootItems() do
+        if (select(4, GetLootSlotInfo(i))) >= threshold then
+            local item = OpenRolls:CreateLootWindow("OpenRollsLootWindow" .. i, UIParent, i)
+            table.insert(lewt, item)
+            item:Show()
+        end
+    end
+    RepositionLootWindows()
 end
 
 function OpenRolls:LOOT_CLOSED()
@@ -171,5 +195,19 @@ function OpenRolls:LOOT_CLOSED()
     end
 end
 
+function OpenRolls:LOOT_SLOT_CLEARED(event, slot)
+    local pos = nil
+    for i, frame in pairs(lewt) do
+        if frame.slot == slot then 
+            frame:Release() 
+            pos = i
+        end
+    end
+    if pos ~= nil then table.remove(lewt, pos) end
+    RepositionLootWindows()
+end
+
 OpenRolls:RegisterEvent("LOOT_OPENED")
 OpenRolls:RegisterEvent("LOOT_CLOSED")
+OpenRolls:RegisterEvent("LOOT_SLOT_CLEARED")
+OpenRolls:RegisterEvent("PLAYER_LEAVING_WORLD")
