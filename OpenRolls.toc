@@ -14,5 +14,6 @@
 embeds.xml
 
 OpenRolls.lua
+LootWindow.lua
 SummaryLine.lua
 SummaryFrame.lua
