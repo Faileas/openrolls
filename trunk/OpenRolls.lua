@@ -103,6 +103,16 @@ local function Roll(item, quantity)
     end)
 end
 
+function OpenRolls:DistributeItemByName(player, slot)
+    for i = 1, 40 do
+        if GetMasterLootCandidate(i) == player then
+            GiveMasterLoot(slot, i)
+            return true
+        end
+    end
+    return false
+end
+
 local function CommandLine(str)
     local found, _, item, quantity = str:find("^(" .. ItemLinkPattern ..")%s*(%d*)$")
     if found then
@@ -126,13 +136,24 @@ end
 
 OpenRolls:RegisterChatCommand("openroll", CommandLine)
 
---[[function OpenRolls:LOOT_OPENED()
+local lewt = {}
+
+function OpenRolls:LOOT_OPENED()
     NamesFrame.frame:Show()
+    lewt = {}
+    for i = 1, GetNumLootItems() do
+        lewt[i] = OpenRolls:CreateLootWindow("OpenRollsLootWindow" .. i, UIParent, i)
+        lewt[i]:SetPoint("CENTER")
+        lewt[i]:Show()
+    end
 end
 
 function OpenRolls:LOOT_CLOSED()
     NamesFrame.frame:Hide()
+    for i, j in pairs(lewt) do
+        j:Release()
+    end
 end
 
 OpenRolls:RegisterEvent("LOOT_OPENED")
-OpenRolls:RegisterEvent("LOOT_CLOSED")]]--
+OpenRolls:RegisterEvent("LOOT_CLOSED")
