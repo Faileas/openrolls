@@ -72,6 +72,14 @@ end
 
 local NamesFrame = NamesFrame or CreateNameFrame()
 
+function OpenRolls:GetDisenchanter()
+    return NamesFrame.chantName:GetText()
+end
+
+function OpenRolls:GetBanker()
+    return NamesFrame.bankName:GetText()
+end
+
 function OpenRolls:InitializeSavedVariables()
     if OpenRollsData.ShowSummaryWhenRollsOver == nil then
         OpenRollsData.ShowSummaryWhenRollsOver = true
@@ -140,11 +148,19 @@ local lewt = {}
 
 function OpenRolls:LOOT_OPENED()
     NamesFrame.frame:Show()
+    local first = true
     lewt = {}
     for i = 1, GetNumLootItems() do
-        lewt[i] = OpenRolls:CreateLootWindow("OpenRollsLootWindow" .. i, UIParent, i)
-        lewt[i]:SetPoint("CENTER")
-        lewt[i]:Show()
+        local item = OpenRolls:CreateLootWindow("OpenRollsLootWindow" .. i, UIParent, i)
+        --table.insert(lewt, OpenRolls:CreateLootWindow("OpenRollsLootWindow" .. i, UIParent, i))
+        if #lewt == 0 then
+            item:SetPoint("LEFT", LootFrame, "RIGHT", -66, 0)
+            item:SetPoint("TOP", NamesFrame.frame, "BOTTOM", -4, 0)
+        else
+            item:SetPoint("TOPLEFT", lewt[#lewt], "BOTTOMLEFT")
+        end
+        table.insert(lewt, item)
+        item:Show()
     end
 end
 

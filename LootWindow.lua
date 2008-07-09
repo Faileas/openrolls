@@ -54,7 +54,9 @@ do
         
         local ignore = CreateFrame("button", framename .. "Ignore", self, "UIPanelCloseButton")
         ignore:SetPoint("TOPRIGHT", self, "TOPRIGHT", -4, -4)
-        ignore:SetScript("OnClick", nil)
+        ignore:SetScript("OnClick", function(frame, ...)
+            frame:GetParent():Release()
+        end)
     
         local name = self:CreateFontString(framename .. "Name", "OVERLAY", "GameFontNormal")
         name:SetJustifyH("CENTER")
@@ -68,14 +70,28 @@ do
         chant:SetHeight(20)
         chant:SetWidth(100)
         chant:SetText("Disenchant")
-        chant:SetScript("OnClick", nil)
+        chant:SetScript("OnClick", function(frame, ...)
+            local player = OpenRolls:GetDisenchanter()
+            local parent = frame:GetParent()
+            if player == "" then return end
+            if not OpenRolls:DistributeItemByName(player, parent.slot) then
+                OpenRolls:Print(player .. " is not eligible for this item.")
+            end
+        end)
         
         local bank = CreateFrame("button", framename .. "Bank", self, "UIPanelButtonTemplate")
         bank:SetPoint("TOPLEFT", chant, "TOPRIGHT")
         bank:SetHeight(20)
         bank:SetWidth(100)
         bank:SetText("Bank")
-        bank:SetScript("OnClick", nil)
+        bank:SetScript("OnClick", function(frame, ...)
+            local player = OpenRolls:GetBanker()
+            local parent = frame:GetParent()
+            if player == "" then return end
+            if not OpenRolls:DistributeItemByName(player, parent.slot) then
+                OpenRolls:Print(player .. " is not eligible for this item.")
+            end
+        end)
                 
         local duration = CreateFrame("EditBox", framename .. "Duration", self, "InputBoxTemplate")
         duration:SetAutoFocus(false)
@@ -95,14 +111,28 @@ do
         open:SetHeight(20)
         open:SetWidth(100)
         open:SetText("Open")
-        open:SetScript("OnClick", nil)
+        open:SetScript("OnClick", function(frame, ...)
+            local parent = frame:GetParent()
+            OpenRolls:Roll(GetLootSlotLink(parent.slot), 1)
+        end)
         
         local raid = CreateFrame("button", framename .. "Raid", self, "UIPanelButtonTemplate")
         raid:SetPoint("TOPRIGHT", bank, "BOTTOMRIGHT")
         raid:SetHeight(20)
         raid:SetWidth(100)
         raid:SetText("Raid")
-        raid:SetScript("OnClick", nil)
+        raid:SetScript("OnClick", function(frame, ...)
+            local candidates = {}
+            local parent = frame:GetParent()
+            for i = 1, 40 do
+                if GetMasterLootCandidate(i) ~= nil then
+                    table.insert(candidates, {index = i, name = GetMasterLootCandidate(i)})
+                end
+            end
+            local candidate = math.random(#candidates)
+            GiveMasterLoot(parent.slot, candidates[candidate].index)
+            parent.assignName:SetText(candidates[candidate].name)
+        end)
         
         local assignName = CreateFrame("EditBox", framename .. "AssignName", self, "InputBoxTemplate")
         assignName:SetAutoFocus(false)
@@ -120,15 +150,25 @@ do
         assign:SetHeight(20)
         assign:SetText("Award")
         assign:SetScript("OnClick", function(frame, ...)
-            local player = assignName:GetText()
+            local window = frame:GetParent()
+            local player = window.assignName:GetText()
             if player == "" then return end
-            if not OpenRolls:DistributeItemByName(player, lootslot) then
+            if not OpenRolls:DistributeItemByName(player, window.slot) then
                 OpenRolls:Print(player .. " not eligible for this item.")
             end
         end)
         
+        self.slot = lootslot
         self.icon = icon
         self.name = name
+        self.raid = raid
+        self.open = open
+        self.assign = assign
+        self.assignName = assignName
+        self.duration = duration
+        self.chant = chant
+        self.bank = bank
+        self.ignore = ignore
         
         self.Release = Release
         
