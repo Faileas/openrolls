@@ -5,6 +5,8 @@ OpenRollsData = OpenRollsData or {}
 local ItemLinkPattern = "|c%x+|H.+|h%[.+%]|h|r"
 
 local tonumber = tonumber
+local table = table
+local pairs = pairs
 
 local function CreateNameFrame()
     local frame = CreateFrame("Frame", "OpenRollsNameFrame", UIParent)
@@ -170,6 +172,18 @@ local function RepositionLootWindows()
     end
 end
 
+local AttachedLootWindows = {}
+
+function OpenRolls:RegisterLootWindow(addon)
+    table.insert(AttachedLootWindows, addon)
+end
+
+function OpenRolls:UnregisterLootWindow(addon)
+    for i, j in pairs(AttachedLootWindows) do
+        if j == addon then table.remove(AttachedLootWindows, i) return end
+    end
+end
+
 function OpenRolls:LOOT_OPENED()
     if OpenRollsData.ShowLootWindows == 'never' then return end
     if OpenRollsData.ShowLootWindows == 'whenML' and (select(2, GetLootMethod())) ~= 0 then return end
@@ -180,6 +194,9 @@ function OpenRolls:LOOT_OPENED()
     for i = 1, GetNumLootItems() do
         if (select(4, GetLootSlotInfo(i))) >= threshold then
             local item = OpenRolls:CreateLootWindow("OpenRollsLootWindow" .. i, UIParent, i)
+            for _, j in pairs(AttachedLootWindows) do
+                item:AttachLootWindow(j)
+            end
             table.insert(lewt, item)
             item:Show()
         end
@@ -210,3 +227,32 @@ OpenRolls:RegisterEvent("LOOT_OPENED")
 OpenRolls:RegisterEvent("LOOT_CLOSED")
 OpenRolls:RegisterEvent("LOOT_SLOT_CLEARED")
 OpenRolls:RegisterEvent("PLAYER_LEAVING_WORLD")
+
+OpenRollsTestAddon = {}
+function OpenRollsTestAddon:CreateLootWindow(slot, parent)
+    local f = CreateFrame("frame", "OpenRollsTestWindow" .. slot, parent)
+    f:SetPoint("TOPLEFT", UIParent, "TOPLEFT")
+    f:SetHeight(40)
+    f:SetWidth(100)
+    
+    local greed = CreateFrame("button", "OpenRollsTestWindowGreed" .. slot, f, "UIPanelButtonTemplate")
+    greed:SetPoint("TOPLEFT", f, "TOPLEFT")
+    greed:SetHeight(20)
+    greed:SetWidth(100)
+    greed:SetText("Greed")
+    greed:SetScript("OnClick", function(frame, ...)
+        OpenRolls:Print("Greed " .. slot)
+    end)
+    
+    local need = CreateFrame("button", "OpenRollsTestWindowNeed" .. slot, f, "UIPanelButtonTemplate")
+    need:SetPoint("TOPLEFT", greed, "BOTTOMLEFT")
+    need:SetHeight(20)
+    need:SetWidth(100)
+    need:SetText("Need")
+    need:SetScript("OnClick", function(frame, ...)
+        OpenRolls:Print("Need " .. slot)
+    end)
+    
+    return f
+end
+

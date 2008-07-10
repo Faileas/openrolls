@@ -17,6 +17,22 @@ do
         self:Hide()
     end
     
+    local function AttachLootWindow(self, addon)
+        if type(addon.CreateLootWindow) ~= "function" then
+            error("OpenRolls: Function CreateLootWindow not found on addon object")
+        end
+        local frame = addon:CreateLootWindow(self.slot, self)
+        --frame:SetPoint("TOPLEFT", self, "TOPLEFT", self:GetWidth(), -20)
+        frame:ClearAllPoints()
+        frame:SetPoint("TOP", self.ignore, "BOTTOM", 0, 6)
+        frame:SetPoint("LEFT", self, "LEFT", self:GetWidth() - 12, 0)
+        self:SetWidth(self:GetWidth() + frame:GetWidth())
+        
+        if frame:GetHeight() > self:GetHeight() then 
+            self:SetHeight(frame:GetHeight())
+        end
+    end
+    
     function OpenRolls:CreateLootWindow(framename, parent, lootslot)
         local self = CreateFrame("frame", framename, parent)
         self.lootSlot = lootslot
@@ -171,6 +187,7 @@ do
         self.ignore = ignore
         
         self.Release = Release
+        self.AttachLootWindow = AttachLootWindow
         
         return self
     end
