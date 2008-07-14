@@ -217,6 +217,7 @@ do
         self.chant = chant
         self.bank = bank
         self.ignore = ignore
+        self.attachedFrames = {}
         
         self.Release = Release
         self.AttachLootWindow = AttachLootWindow
