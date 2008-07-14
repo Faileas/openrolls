@@ -26,6 +26,15 @@ do
         frame:ClearAllPoints()
         frame:SetPoint("TOP", self.ignore, "BOTTOM", 0, 6)
         frame:SetPoint("LEFT", self, "LEFT", self:GetWidth() - 12, 0)
+        
+        frame.SetAssign = function(f, player)
+            self.assignName:SetText(player)
+        end
+        
+        frame.GetAssign = function(f)
+            return self.assignName:GetText()
+        end
+        
         self:SetWidth(self:GetWidth() + frame:GetWidth())
         
         if frame:GetHeight() > self:GetHeight() then 
