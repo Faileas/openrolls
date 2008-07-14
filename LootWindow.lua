@@ -101,6 +101,12 @@ do
             if player == "" then return end
             if not OpenRolls:DistributeItemByName(player, parent.slot) then
                 OpenRolls:Print(player .. " is not eligible for this item.")
+                return
+            end
+            for _, j in pairs(AttachedLootWindows) do
+                if type(j.AwardToDisenchanter) == 'function' then
+                    j:AwardToDisenchanter(GetLootSlotLink(parent.slot), player)
+                end
             end
         end)
         
@@ -115,6 +121,12 @@ do
             if player == "" then return end
             if not OpenRolls:DistributeItemByName(player, parent.slot) then
                 OpenRolls:Print(player .. " is not eligible for this item.")
+                return
+            end
+            for _, j in pairs(AttachedLootWindows) do
+                if type(j.AwardToBanker) == 'function' then
+                    j:AwardToBanker(GetLootSlotLink(parent.slot), player)
+                end
             end
         end)
                 
@@ -180,6 +192,12 @@ do
             if player == "" then return end
             if not OpenRolls:DistributeItemByName(player, window.slot) then
                 OpenRolls:Print(player .. " not eligible for this item.")
+                return
+            end
+            for _, j in pairs(AttachedLootWindows) do
+                if type(j.AwardToPlayer) == 'function' then
+                    j:AwardToPlayer(GetLootSlotLink(parent.slot), player)
+                end
             end
         end)
         
