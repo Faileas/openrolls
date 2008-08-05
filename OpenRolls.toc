@@ -17,4 +17,5 @@ OpenRolls.lua
 LootWindow.lua
 SummaryLine.lua
 SummaryFrame.lua
+MessageBox.lua
 Config.lua
