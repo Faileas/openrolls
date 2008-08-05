@@ -90,6 +90,7 @@ function OpenRolls:InitializeSavedVariables()
     end
     Init("ShowSummaryWhenRollsOver", true)
     Init("ShowLootWindows", "whenML")
+    Init("ConfirmBeforeLooting", true)
     Init("Disenchanter", "")
     Init("Banker", "")
 end
@@ -129,7 +130,12 @@ end
 function OpenRolls:DistributeItemByName(player, slot)
     for i = 1, 40 do
         if GetMasterLootCandidate(i) == player then
-            GiveMasterLoot(slot, i)
+            if OpenRollsData.ConfirmBeforeLooting == true then
+                local str = "Do you wish to award " .. GetLootSlotLink(slot) .. " to " .. player .. "?"
+                OpenRolls:CreateMessageBox(str, function() GiveMasterLoot(slot, i) end, function() end)
+            else
+                GiveMasterLoot(slot, i)
+            end
             return true
         end
     end

@@ -76,10 +76,20 @@ do
     RemindString:SetPoint("LEFT", RemindBox, "RIGHT")
     RemindString:SetText("Display roll summary window when roll is complete?")
     
+    local ConfirmBox = CreateFrame("CheckButton", "OpenRollsConfigConfirmBox", ConfigPanel, "UICheckButtonTemplate")
+    ConfirmBox:SetPoint("TOPLEFT", RemindBox, "BOTTOMLEFT", 0, 0)
+    
+    local ConfirmString = 
+        ConfigPanel:CreateFontString("OpenRollsConfigConfirmString", "OVERLAY", "GameFontNormal")
+    ConfirmString:SetPoint("CENTER", ConfirmBox, "CENTER")
+    ConfirmString:SetPoint("LEFT", ConfirmBox, "RIGHT")
+    ConfirmString:SetText("Confirm before looting?")
+    
     ConfigPanel:SetScript("OnShow", function(self, ...)
         local Data = OpenRollsData
         WhenShowBox:Click(Data.ShowLootWindows)
         RemindBox:SetChecked(Data.ShowSummaryWhenRollsOver)
+        ConfirmBox:SetChecked(Data.ConfirmBeforeLooting)
     end)
     
     ConfigPanel.name = "Open Rolls"
@@ -87,6 +97,7 @@ do
         local Data = OpenRollsData
         Data.ShowSummaryWhenRollsOver = not not RemindBox:GetChecked()
         Data.ShowLootWindows = WhenShowBox:GetSetting()
+        Data.ConfirmBeforeLooting = not not ConfirmBox:GetSetting()
     end
     InterfaceOptions_AddCategory(ConfigPanel)
 end
