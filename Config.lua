@@ -85,11 +85,55 @@ do
     ConfirmString:SetPoint("LEFT", ConfirmBox, "RIGHT")
     ConfirmString:SetText("Confirm before looting?")
     
+    local WarningBox = CreateFrame("CheckButton", "OpenRollsConfigWarningBox", ConfigPanel, "UICheckButtonTemplate")
+    WarningBox:SetPoint("TOPLEFT", ConfirmBox, "BOTTOMLEFT", 0, 0)
+    
+    local WarningString = 
+        ConfigPanel:CreateFontString("OpenRollsConfigWarningString", "OVERLAY", "GameFontNormal")
+    WarningString:SetPoint("CENTER", WarningBox, "CENTER")
+    WarningString:SetPoint("LEFT", WarningBox, "RIGHT")
+    WarningString:SetText("Provide warning period?")
+    
+    local MainDuration = CreateFrame("EditBox", "OpenRollsConfigMainDuration", ConfigPanel, "InputBoxTemplate")
+    MainDuration:SetAutoFocus(false)
+    MainDuration:SetFontObject(ChatFontNormal)
+    MainDuration:SetNumeric()
+    MainDuration:SetTextInsets(0, 0, 3, 3)
+    MainDuration:SetMaxLetters(3)
+    MainDuration:SetPoint("TOPLEFT", WarningBox, "BOTTOMLEFT", 10, 0)
+    MainDuration:SetHeight(20)
+    MainDuration:SetWidth(30)
+    
+    local MainDurationString = 
+        ConfigPanel:CreateFontString("OpenRollsConfigMainDurationString", "OVERLAY", "GameFontNormal")
+    MainDurationString:SetPoint("CENTER", MainDuration, "CENTER")
+    MainDurationString:SetPoint("LEFT", MainDuration, "RIGHT")
+    MainDurationString:SetText("Length of silent countdown")
+    
+    local SubDuration = CreateFrame("EditBox", "OpenRollsConfigSubDuration", ConfigPanel, "InputBoxTemplate")
+    SubDuration:SetAutoFocus(false)
+    SubDuration:SetFontObject(ChatFontNormal)
+    SubDuration:SetNumeric()
+    SubDuration:SetTextInsets(0, 0, 3, 3)
+    SubDuration:SetMaxLetters(3)
+    SubDuration:SetPoint("TOPLEFT", MainDuration, "BOTTOMLEFT", 0, -10)
+    SubDuration:SetHeight(20)
+    SubDuration:SetWidth(30)
+    
+    local SubDurationString = 
+        ConfigPanel:CreateFontString("OpenRollsConfigSubDurationString", "OVERLAY", "GameFontNormal")
+    SubDurationString:SetPoint("CENTER", SubDuration, "CENTER")
+    SubDurationString:SetPoint("LEFT", SubDuration, "RIGHT")
+    SubDurationString:SetText("Length of spammed countdown")
+    
     ConfigPanel:SetScript("OnShow", function(self, ...)
         local Data = OpenRollsData
         WhenShowBox:Click(Data.ShowLootWindows)
         RemindBox:SetChecked(Data.ShowSummaryWhenRollsOver)
         ConfirmBox:SetChecked(Data.ConfirmBeforeLooting)
+        WarningBox:SetChecked(Data.Warning)
+        MainDuration:SetText(Data.SilentTime)
+        SubDuration:SetText(Data.CountdownTime)
     end)
     
     ConfigPanel.name = "Open Rolls"
@@ -97,7 +141,10 @@ do
         local Data = OpenRollsData
         Data.ShowSummaryWhenRollsOver = not not RemindBox:GetChecked()
         Data.ShowLootWindows = WhenShowBox:GetSetting()
-        Data.ConfirmBeforeLooting = not not ConfirmBox:GetSetting()
+        Data.ConfirmBeforeLooting = not not ConfirmBox:GetChecked()
+        Data.Warning = not not WarningBox:GetChecked()
+        Data.SilentTime = tonumber(MainDuration:GetText())
+        Data.CountdownTime = tonumber(SubDuration:GetText())
     end
     InterfaceOptions_AddCategory(ConfigPanel)
 end

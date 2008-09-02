@@ -1,5 +1,5 @@
 OpenRolls = LibStub("AceAddon-3.0"):NewAddon("OpenRolls", 
-    "AceConsole-3.0", "AceEvent-3.0", "AceTimer-3.0", "GroupLib-1.0")
+    "AceConsole-3.0", "AceEvent-3.0", "AceTimer-3.0", "GroupLib-1.0", "Countdown-1.0")
 OpenRollsData = {}
 
 local ItemLinkPattern = "|c%x+|H.+|h%[.+%]|h|r"
@@ -82,17 +82,21 @@ function OpenRolls:GetBanker()
     return NamesFrame.bankName:GetText()
 end
 
-function OpenRolls:InitializeSavedVariables()
-    local function Init(var, initial) 
-        if OpenRollsData[var] == nil then
-            OpenRollsData[var] = initial
-        end
+local function Init(var, initial)
+    if OpenRollsData[var] == nil then
+        OpenRollsData[var] = initial
     end
+end
+
+function OpenRolls:InitializeSavedVariables()
     Init("ShowSummaryWhenRollsOver", true)
     Init("ShowLootWindows", "whenML")
     Init("ConfirmBeforeLooting", true)
     Init("Disenchanter", "")
     Init("Banker", "")
+    Init("Warning", true)
+    Init("SilentTime", 25)
+    Init("CountdownTime", 5)
 end
 
 function OpenRolls:OnInitialize()
@@ -109,10 +113,14 @@ end
 function OpenRolls:Roll(item, quantity, duration)
     if duration == nil or duration <= 0 then duration = 30 end
     OpenRolls:StartRoll(item, quantity)
-    local timer = OpenRolls:ScheduleTimer(function() 
-        OpenRolls:EndRoll(item, quantity)
-        OpenRolls:UnregisterMessage("RollTrack_Roll")
-    end, duration)
+    local timer = 
+        OpenRolls:BeginCountdown({initial = OpenRollsData.SilentTime, count = OpenRollsData.CountdownTime},
+                                 "Communicate",
+                                 {initial = "Warning",
+                                  count = function() 
+                                    OpenRolls:EndRoll(item, quantity)
+                                    OpenRolls:UnregisterMessage("RollTrack_Roll")
+                                  end})
     
     OpenRolls:RegisterMessage("RollTrack_Roll", function(msg, char, roll, min, max)
         if not OpenRolls:AssignRoll(char, roll) then
@@ -122,7 +130,7 @@ function OpenRolls:Roll(item, quantity, duration)
         if OpenRolls:HasEverybodyRolled() then
             OpenRolls:EndRoll(item, quantity)
             OpenRolls:UnregisterMessage("RollTrack_Roll")
-            OpenRolls:CancelTimer(timer)
+            OpenRolls:CancelCountdown(timer)
         end
     end)
 end

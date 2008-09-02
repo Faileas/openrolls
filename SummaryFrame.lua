@@ -137,6 +137,17 @@ function OpenRolls:PrintWinners(item, quantity)
     end
 end
 
+function OpenRolls:Warning()
+    if not OpenRollsData.Warning then return end
+
+    OpenRolls:Communicate("The following players have not rolled: ")
+    for i = 1, Group.Number() do
+        if strings[i]:Value() == -1 then
+            OpenRolls:Communicate("   " .. strings[i]:GetPlayer())
+        end
+    end
+end
+
 function OpenRolls:HideSummary()
     frame:Hide()
 end
