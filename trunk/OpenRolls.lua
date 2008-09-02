@@ -135,14 +135,19 @@ function OpenRolls:Roll(item, quantity, duration)
     end)
 end
 
-function OpenRolls:DistributeItemByName(player, slot)
+function OpenRolls:DistributeItemByName(player, window, followup)
+    local slot = window.slot
+    local item = GetLootSlotLink(slot)
     for i = 1, 40 do
         if GetMasterLootCandidate(i) == player then
             if OpenRollsData.ConfirmBeforeLooting == true then
-                local str = "Do you wish to award " .. GetLootSlotLink(slot) .. " to " .. player .. "?"
-                OpenRolls:CreateMessageBox(str, function() GiveMasterLoot(slot, i) end, function() end)
+                local str = "Do you wish to award " .. item .. " to " .. player .. "?"
+                OpenRolls:CreateMessageBox(str, function() GiveMasterLoot(slot, i) 
+                                                           followup(window, player)
+                                                end, function() end)
             else
                 GiveMasterLoot(slot, i)
+                followup(window, player)
             end
             return true
         end

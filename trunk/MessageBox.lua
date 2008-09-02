@@ -1,3 +1,4 @@
+local count = 0
 function OpenRolls:CreateMessageBox(text, yes, no)
     local box = CreateFrame("Frame", "OpenRollsMessageBox" .. count, UIParent)
     count = count + 1

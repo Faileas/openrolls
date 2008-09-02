@@ -102,14 +102,17 @@ do
             local parent = frame:GetParent()
             local item = GetLootSlotLink(parent.slot)
             if player == "" then return end
-            if not OpenRolls:DistributeItemByName(player, parent.slot) then
+            local followup = function(window, player)
+                local item = GetLootSlotLink(window.slot)
+                for _, j in pairs(window.attachedFrames) do
+                    if type(j.AwardToDisenchanter) == 'function' then
+                        j:AwardToDisenchanter(player, item)
+                    end
+                end
+            end
+            if not OpenRolls:DistributeItemByName(player, parent, followup) then
                 OpenRolls:Print(player .. " is not eligible for this item.")
                 return
-            end
-            for _, j in pairs(parent.attachedFrames) do
-                if type(j.AwardToDisenchanter) == 'function' then
-                    j:AwardToDisenchanter(player, item)
-                end
             end
         end)
         
@@ -123,14 +126,17 @@ do
             local parent = frame:GetParent()
             local item = GetLootSlotLink(parent.slot)
             if player == "" then return end
-            if not OpenRolls:DistributeItemByName(player, parent.slot) then
+            local followup = function(window, player)
+            local item = GetLootSlotLink(window.slot)
+                for _, j in pairs(window.attachedFrames) do
+                    if type(j.AwardToBanker) == 'function' then
+                        j:AwardToBanker(player, item)
+                    end
+                end
+            end
+            if not OpenRolls:DistributeItemByName(player, parent, followup) then
                 OpenRolls:Print(player .. " is not eligible for this item.")
                 return
-            end
-            for _, j in pairs(parent.attachedFrames) do
-                if type(j.AwardToBanker) == 'function' then
-                    j:AwardToBanker(player, item)
-                end
             end
         end)
                 
@@ -195,14 +201,17 @@ do
             local player = window.assignName:GetText()
             local item = GetLootSlotLink(window.slot)
             if player == "" then return end
-            if not OpenRolls:DistributeItemByName(player, window.slot) then
+            local followup = function(window, player)
+                local item = GetLootSlotLink(window.slot)
+                for _, j in pairs(window.attachedFrames) do
+                    if type(j.AwardToPlayer) == 'function' then
+                        j:AwardToPlayer(player, item)
+                    end
+                end
+            end
+            if not OpenRolls:DistributeItemByName(player, window, followup) then
                 OpenRolls:Print(player .. " not eligible for this item.")
                 return
-            end
-            for _, j in pairs(window.attachedFrames) do
-                if type(j.AwardToPlayer) == 'function' then
-                    j:AwardToPlayer(player, item)
-                end
             end
         end)
         
@@ -221,7 +230,7 @@ do
         
         self.Release = Release
         self.AttachLootWindow = AttachLootWindow
-        
+
         return self
     end
 end
