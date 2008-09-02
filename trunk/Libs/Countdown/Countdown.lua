@@ -12,33 +12,13 @@ local type = type
 local ActiveIDs = {}
 
 local function Callback(self, callback, arg)
+    if callback == nil then return end
     if type(callback) == "string" then
         self[callback](self, arg)
     else
         callback(arg)
     end
 end
-
-local function Complete(args)
-    if not ActiveIDs[args.id] then return end
-    ActiveIDs[args.id] = nil
-    Callback(args.self, args.completed)
-end
-
-local function Tick(args)
-    if not ActiveIDs[args.id] then return end
-    
-    Callback(args.self, args.display, args.duration)
-    
-    if args.duration == 0 then
-        Timer:ScheduleTimer(Complete, args.delay, args)
-    else    
-        args.duration = args.duration - 1    
-        Timer:ScheduleTimer(Tick, 1, args)
-    end
-end
-
-local count = 0
 
 local function ValidateCallback(self, callback, source, callbackname)
 	if type(callback) ~= "string" and type(callback) ~= "function" then 
@@ -55,28 +35,85 @@ local function ValidateCallback(self, callback, source, callbackname)
     return true
 end
 
-function Countdown.BeginCountdown(self, duration, display, completed, delay)
+local count = 0
+function Countdown.BeginCountdown(self, durations, display, callbacks)
+    if type(durations) == "number" then
+        durations = {count = durations}
+    end
+    if type(callbacks) == "function" then
+        callbacks = {final = callbacks}
+    end
+    
     count = count + 1
-    if delay == nil then delay = 0 end
-        
-    ActiveIDs[count] = true
     
-    ValidateCallback(self, display, "BeginCountdown(duration, display, completed, delay)", "display")
-    ValidateCallback(self, completed, "BeginCountdown(duration, display, completed, delay)", "completed")
+    if durations.initial == nil then durations.initial = 0 end
+    if durations.count == nil then durations.count = 0 end
+    if durations.final == nil then durations.final = 0 end
     
-    Timer:ScheduleTimer(Tick, delay, {self = self, duration = duration, display = display, completed = completed, delay = delay, id = count})
-    return count
+    local src = "BeginCountdownBeta(self, durations, display, callbacks)"
+    if callbacks.initial ~= nil then 
+        ValidateCallback(self, callbacks.initial, src, "callbacks.initial") 
+    end
+    if callbacks.count ~= nil then 
+        ValidateCallback(self, callbacks.count, src, "callbacks.count") 
+    end
+    if callbacks.final ~= nil then 
+        ValidateCallback(self, callbacks.final, src, "callbacks.final") 
+    end
+    
+    local id = count
+    ActiveIDs[self] = ActiveIDs[self] or {}
+    
+    local function final()
+        local myIDs = ActiveIDs[self]
+        if not myIDs[id] then return end
+        myIDs[id] = nil
+        Callback(self, callbacks.final)
+    end
+    
+    local function tick()
+        local myIDs = ActiveIDs[self]
+        if not myIDs[id] then return end
+    
+        Callback(self, display, durations.count)
+    
+        if durations.count == 0 then
+            Callback(self, callbacks.count)
+            Timer:ScheduleTimer(final, durations.final)
+        else    
+            durations.count = durations.count - 1
+            Timer:ScheduleTimer(tick, 1)
+        end
+    end
+    
+    local function init()
+        local myIDs = ActiveIDs[self]
+        if not myIDs[id] then return end
+        Callback(self, callbacks.initial, id)
+        tick()
+    end
+    
+    Timer:ScheduleTimer(init, durations.initial)
+    ActiveIDs[self][id] = true
+    
+    return id
 end
 
-function Countdown:CancelCountdown(id)
-    if ActiveIDs[id] then ActiveIDs[id] = nil end
+function Countdown.CancelCountdown(self, id)
+    local myIDs = ActiveIDs[self]
+    if myIDs then myIDs[id] = nil end
+end
+
+function Countdown.CancelAllCountdowns(self)
+    ActiveIDs[self] = {}
 end
 
 Countdown.embeds = Countdown.embeds or {}
 
 local mixins = {
 	"BeginCountdown",
-    "CancelCountdown"
+    "CancelCountdown",
+    "CancelAllCountdowns"
 }
 
 function Countdown:Embed(target)
