@@ -139,28 +139,16 @@ do
                 return
             end
         end)
-                
-        local duration = CreateFrame("EditBox", framename .. "Duration", self, "InputBoxTemplate")
-        duration:SetAutoFocus(false)
-        duration:SetFontObject(ChatFontNormal)
-        duration:SetNumeric()
-        duration:SetTextInsets(0,0,3,3)
-        duration:SetMaxLetters(2)
-        duration:SetPoint("TOPRIGHT", chant, "BOTTOMRIGHT")--, -5, 0)
-        duration:SetHeight(20)
-        duration:SetWidth(20)
-        duration:SetText("30")
-        AttachMouseoverText(duration, "Duration of an open roll", 1, 1, 1, 1)
         
         local open = CreateFrame("button", framename .. "Open", self, "UIPanelButtonTemplate")
-        open:SetPoint("TOPRIGHT", duration, "TOPLEFT", -5, 0)
+        open:SetPoint("TOPRIGHT", chant, "BOTTOMRIGHT")
         open:SetPoint("LEFT", chant, "LEFT")
         open:SetHeight(20)
         open:SetWidth(100)
         open:SetText("Open")
         open:SetScript("OnClick", function(frame, ...)
             local parent = frame:GetParent()
-            OpenRolls:Roll(GetLootSlotLink(parent.slot), 1, tonumber(duration:GetText()))
+            OpenRolls:Roll(GetLootSlotLink(parent.slot), 1)
         end)
         
         local raid = CreateFrame("button", framename .. "Raid", self, "UIPanelButtonTemplate")
