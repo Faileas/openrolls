@@ -101,6 +101,14 @@ local function Sort()
     end]]--
 end
 
+
+function OpenRolls:UpdateRollList()
+    Sort()
+    if OpenRolls.timer and OpenRolls:HasEverybodyRolled() then
+        OpenRolls:EndRoll(item, quantity)
+    end
+end
+
 function OpenRolls:AssignRoll(name, roll)
     for i = 1, Group.Number() do
         if strings[i]:GetPlayer() == name then
@@ -152,23 +160,35 @@ function OpenRolls:HideSummary()
     frame:Hide()
 end
 
+local currentItem, currentQuantity
+
 function OpenRolls:StartRoll(item, quantity)
     OpenRolls:Communicate("Open roll for " .. quantity .. "x" .. item)
     OpenRolls:FillSummary("Roll in progress for " .. quantity .. "x" .. item)
     OpenRolls:ShowSummary()
+    
+    currentItem = item
+    currentQuantity = quantity
 end
 
-function OpenRolls:EndRoll(item, quantity)
-    title:SetText("Roll finished for " .. quantity .. "x" .. item)
+function OpenRolls:EndRoll()
+    title:SetText("Roll finished for " .. currentQuantity .. "x" .. currentItem)
     for i = 1, Group.Number() do
         if strings[i]:Value() == -1 then
             strings[i]:PassRoll()
         end
     end
-    OpenRolls:PrintWinners(item, quantity)
+    OpenRolls:PrintWinners(currentItem, currentQuantity)
     if OpenRollsData.ShowSummaryWhenRollsOver then
         OpenRolls:ShowSummary()
     end
+    
+    OpenRolls:UnregisterMessage("RollTrack_Roll")
+    OpenRolls:CancelCountdown(OpenRolls.timer)
+    
+    currentItem = nil
+    currentQuantity = nil
+    OpenRolls.timer = nil
 end
 
 function OpenRolls:FillSummary(titl)

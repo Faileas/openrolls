@@ -1,6 +1,9 @@
 local tostring = tostring
 
 do
+
+    local info = {}
+
     local function GetRolledColor()
         return 0, 1, 0
     end
@@ -35,6 +38,10 @@ do
         GameTooltip:Hide()
     end
     
+    local function OnMouseUp(self, ...)
+        ToggleDropDownMenu(1, nil, self.menu, self, 0, 0);
+    end
+    
     local function GetPlayer(self)
         return self.name
     end
@@ -62,18 +69,30 @@ do
         self.NameString:SetTextColor(GetPassedColor())
     end
     
+    local function HasPassed(self)
+        return self.roll == 0
+    end
+    
     local function ClearRoll(self)
         self.roll = -1
         self.RollString:SetText("Waiting...")
         self.RollString:SetTextColor(GetWaitingColor())
         self.NameString:SetTextColor(GetWaitingColor())
-    end    
+    end
+    
+    local function IsWaiting(self)
+        return self.roll == -1
+    end
     
     local function SetOffline(self)
         self.roll = -2
         self.RollString:SetText("Offline")
         self.RollString:SetTextColor(GetOfflineColor())
         self.NameString:SetTextColor(GetOfflineColor())
+    end
+    
+    local function IsOffline(self)
+        return self.roll == -2
     end
     
     local function Value(self)
@@ -86,12 +105,52 @@ do
         return self.name < other.name
     end
     
+    local function CreateMenu(self, framename)
+        local menu = CreateFrame("Frame", framename .. "Menu", self)
+        menu.displayMode = "MENU"
+        menu.initialize = function()    
+            for k in pairs(info) do info[k] = nil end
+            -- Create the title of the menu
+            info.isTitle		= 1
+            info.text		    = self.name
+            info.notCheckable	= 1
+            UIDropDownMenu_AddButton(info, level)
+
+            info.isTitle		= nil
+            info.notCheckable	= nil
+            info.disabled		= self:IsOffline() or nil
+
+            -- Menu Item 1
+            info.text		= "Pass"
+            info.func		= function() self:PassRoll() OpenRolls:UpdateRollList() end
+            info.arg1		= 1
+            UIDropDownMenu_AddButton(info, level)
+            
+            --Menu Item 2
+            info.text		= "Reset"
+            info.func		= function(arg1) self:ClearRoll() OpenRolls:UpdateRollList() end
+            info.arg1		= 2
+            UIDropDownMenu_AddButton(info, level)
+
+            -- Close menu item
+            info.disabled   = nil
+            info.arg1		= nil
+            info.hasArrow	= nil
+            info.text		= CLOSE
+            info.func		= CloseDropDownMenus
+            UIDropDownMenu_AddButton(info, level)
+        end
+        
+        return menu
+    end
+    
     function OpenRolls:CreateSummaryLine(framename, parent, player)
         local self = CreateFrame("frame", framename, parent)
         self:EnableMouse()
         self:SetScript("OnEnter", function(self, ...) self:OnEnter() end)
         self:SetScript("OnLeave", function(self, ...) self:OnLeave() end)
-            
+        self:SetScript("OnMouseUp", function(self, ...) self:OnMouseUp() end)
+
         local name = self:CreateFontString(framename .. "Name", "OVERLAY", "GameFontNormal")
         name:SetJustifyH("LEFT")
         name:SetPoint("TOPLEFT", self, "TOPLEFT")
@@ -103,17 +162,23 @@ do
         roll:SetJustifyH("RIGHT")
         roll:SetPoint("TOPRIGHT", self, "TOPRIGHT")
         self.RollString = roll
-        
+
+        self.menu = CreateMenu(self, framename)
+
         self:SetHeight(name:GetHeight())
-        
+
         self.OnEnter = OnEnter
         self.OnLeave = OnLeave
+        self.OnMouseUp = OnMouseUp
         self.GetPlayer = GetPlayer
         self.SetPlayer = SetPlayer
         self.SetRoll = SetRoll
         self.PassRoll = PassRoll
+        self.HasPassed = HasPassed
         self.ClearRoll = ClearRoll
+        self.IsWaiting = IsWaiting
         self.SetOffline = SetOffline
+        self.IsOffline = IsOffline
         self.Value = Value
         self.Compare = Compare        
         return self
