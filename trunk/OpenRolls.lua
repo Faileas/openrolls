@@ -110,8 +110,14 @@ function OpenRolls:PLAYER_LEAVING_WORLD()
     OpenRollsData.Banker = NamesFrame.bankName:GetText()
 end
 
-function OpenRolls:Roll(item, quantity, duration)
-    if duration == nil or duration <= 0 then duration = 30 end
+OpenRolls.timer = nil
+
+function OpenRolls:Roll(item, quantity)
+    if OpenRolls.timer ~= nil then
+        OpenRolls:Print("A roll is already in progress; please wait until it is finished before starting a new roll.")
+        return
+    end
+    
     OpenRolls:StartRoll(item, quantity)
     local timer = 
         OpenRolls:BeginCountdown({initial = OpenRollsData.SilentTime, count = OpenRollsData.CountdownTime},
@@ -127,12 +133,9 @@ function OpenRolls:Roll(item, quantity, duration)
             SendChatMessage("You have already rolled once for this item.", "WHISPER", nil, char)
             return
         end
-        if OpenRolls:HasEverybodyRolled() then
-            OpenRolls:EndRoll(item, quantity)
-            OpenRolls:UnregisterMessage("RollTrack_Roll")
-            OpenRolls:CancelCountdown(timer)
-        end
+        OpenRolls:UpdateRollList()
     end)
+    OpenRolls.timer = timer
 end
 
 function OpenRolls:DistributeItemByName(player, window, followup)
