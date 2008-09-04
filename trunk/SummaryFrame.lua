@@ -1,61 +1,76 @@
+--THIS FILE NEEDS TO BE CLEANED UP
+--Handles everything involving the actual Summary Frame.  Unfortunately, this includes things like
+--starting and ending rolls that really belongs more in the OpenRolls.lua file.  Need to fix that.
+
 local Group = LibStub("GroupLib-1.0")
 
-local frame = CreateFrame("frame", "OpenRollsSummaryFrame", UIParent)
-frame:SetBackdrop({
-    bgFile="Interface\\DialogFrame\\UI-DialogBox-Background",
-    edgeFile="Interface\\DialogFrame\\UI-DialogBox-Border", 
-    tile = true, tileSize = 32, edgeSize = 16, 
-    insets = { left = 4, right = 4, top = 4, bottom = 4 }
-})    
-frame:SetBackdropColor(0,0,0,1)
-frame:SetToplevel(true)
-frame:SetFrameStrata("FULLSCREEN_DIALOG")
-frame:SetMovable(true)
-frame:EnableMouse()    
-frame:SetScript("OnMouseDown", function(frame) frame:StartMoving() end)
-frame:SetScript("OnMouseUp", function(frame) frame:StopMovingOrSizing() end)
-frame:SetPoint("CENTER", UIParent, "CENTER")
-frame:SetWidth(400)
-frame:SetHeight(200)
+local function CreateSummaryFrame(name, parent)
+    local self = CreateFrame("frame", name, parent)
+    self:SetBackdrop({
+        bgFile="Interface\\DialogFrame\\UI-DialogBox-Background",
+        edgeFile="Interface\\DialogFrame\\UI-DialogBox-Border", 
+        tile = true, tileSize = 32, edgeSize = 16, 
+        insets = { left = 4, right = 4, top = 4, bottom = 4 }
+    })    
+    self:SetBackdropColor(0,0,0,1)
+    self:SetToplevel(true)
+    self:SetFrameStrata("FULLSCREEN_DIALOG")
+    self:SetMovable(true)
+    self:EnableMouse()    
+    self:SetScript("OnMouseDown", function(frame) frame:StartMoving() end)
+    self:SetScript("OnMouseUp", function(frame) frame:StopMovingOrSizing() end)
+    self:SetPoint("CENTER", UIParent, "CENTER")
+    self:SetWidth(400)
+    self:SetHeight(200)
 
-local title = frame:CreateFontString("OpenRollsSummaryTitle", "OVERLAY", "GameFontNormal")
-title:SetPoint("TOPLEFT", frame, "TOPLEFT", 6, -12)
-title:SetPoint("RIGHT", frame, "RIGHT", -6)
-title:SetText("Title")
+    local title = self:CreateFontString(name .. "Title", "OVERLAY", "GameFontNormal")
+    title:SetPoint("TOPLEFT", self, "TOPLEFT", 6, -12)
+    title:SetPoint("RIGHT", self, "RIGHT", -6)
+    title:SetText("No item")
 
-local group = CreateFrame("frame", "OpenRollsSummaryGroup", frame)
-group:SetPoint("LEFT", frame, "LEFT", 12, 0)
-group:SetPoint("RIGHT", frame, "RIGHT", -12, 0)
-group:SetPoint("TOP", title, "BOTTOM", 0, -12)
+    local group = CreateFrame("frame", name .. "Group", self)
+    group:SetPoint("LEFT", self, "LEFT", 12, 0)
+    group:SetPoint("RIGHT", self, "RIGHT", -12, 0)
+    group:SetPoint("TOP", title, "BOTTOM", 0, -12)
 
-local strings = {}
-for i = 1, 40 do
-    local str = OpenRolls:CreateSummaryLine("OpenRollsSummaryString" .. i, group, "Not Yet Filled")
-    str:SetPoint("LEFT", group, "LEFT")
-    str:SetPoint("RIGHT", group, "RIGHT")
-    strings[i] = str
+    local strings = {}
+    for i = 1, 40 do
+        local str = OpenRolls:CreateSummaryLine(name .. "String" .. i, group, "Not Yet Filled")
+        str:SetPoint("LEFT", group, "LEFT")
+        str:SetPoint("RIGHT", group, "RIGHT")
+        strings[i] = str
+    end
+
+    strings[1]:SetPoint("TOP", group, "TOP")
+    for i = 2, 40 do
+        strings[i]:SetPoint("TOP", strings[i-1], "BOTTOM")
+    end
+
+    local close = CreateFrame("Button", name .. "Close", self, "UIPanelButtonTemplate")
+    close:SetHeight(20)
+    close:SetWidth(100)
+    --close:SetPoint("CENTER", title, "CENTER")
+    close:SetPoint("TOP", group, "BOTTOM")
+    close:SetText("Close")
+    close:SetScript("OnClick", function(frame) 
+        frame:GetParent():Hide()
+    end)
+
+    group:SetHeight(strings[1]:GetTop() - strings[40]:GetBottom())
+    self:SetHeight(title:GetTop() - close:GetBottom() + 24)
+
+    self:Hide()
+
+    self.title = title
+    self.group = group
+    self.strings = strings
+    self.close = close
+    
+    return self
 end
+local frame = CreateSummaryFrame("OpenRollsSummaryFrame", UIParent)
 
-strings[1]:SetPoint("TOP", group, "TOP")
-for i = 2, 40 do
-    strings[i]:SetPoint("TOP", strings[i-1], "BOTTOM")
-end
-
-local close = CreateFrame("Button", "OpenRollsSummaryClose", frame, "UIPanelButtonTemplate")
-close:SetHeight(20)
-close:SetWidth(100)
---close:SetPoint("CENTER", title, "CENTER")
-close:SetPoint("TOP", group, "BOTTOM")
-close:SetText("Close")
-close:SetScript("OnClick", function(frame) 
-    frame:GetParent():Hide()
-end)
-
-group:SetHeight(strings[1]:GetTop() - strings[40]:GetBottom())
-frame:SetHeight(title:GetTop() - close:GetBottom() + 24)
-
-frame:Hide()
-
+--This function can probably be removed
 local function RollValue(roll)
     if roll == "Offline" then 
         return -2
@@ -68,23 +83,22 @@ local function RollValue(roll)
     end
 end
 
-local debugz = true
-
+--This should be a member of the SummaryFrame object
 local function Sort()
     --this code was basically stolen from the wikipedia article on insertion sort
     for i = 2, Group.Number() do
-        local value = strings[i]
+        local value = frame.strings[i]
         local j = i - 1
-        while j >= 1 and strings[j]:Value() < value:Value() do--strings[j]:Compare(value) do
-            strings[j + 1] = strings[j]
+        while j >= 1 and frame.strings[j]:Value() < value:Value() do--strings[j]:Compare(value) do
+            frame.strings[j + 1] = frame.strings[j]
             j = j - 1
         end
-        strings[j+1] = value
+        frame.strings[j+1] = value
     end
     
-    strings[1]:SetPoint("TOP", group, "TOP")
+    frame.strings[1]:SetPoint("TOP", frame.group, "TOP")
     for i = 2, 40 do
-        strings[i]:SetPoint("TOP", strings[i-1], "BOTTOM")
+        frame.strings[i]:SetPoint("TOP", frame.strings[i-1], "BOTTOM")
     end
     
 --[[insertionSort(array A)
@@ -102,6 +116,8 @@ local function Sort()
 end
 
 
+
+--This will be automated by listening for roll messages
 function OpenRolls:UpdateRollList()
     Sort()
     if OpenRolls.timer and OpenRolls:HasEverybodyRolled() then
@@ -109,11 +125,13 @@ function OpenRolls:UpdateRollList()
     end
 end
 
+
+--This will be automated by listening for roll messages
 function OpenRolls:AssignRoll(name, roll)
     for i = 1, Group.Number() do
-        if strings[i]:GetPlayer() == name then
-            if strings[i]:Value() > 0 then return false end
-            strings[i]:SetRoll(roll)
+        if frame.strings[i]:GetPlayer() == name then
+            if frame.strings[i]:Value() > 0 then return false end
+            frame.strings[i]:SetRoll(roll)
             Sort()
             return true
         end
@@ -121,41 +139,49 @@ function OpenRolls:AssignRoll(name, roll)
     return false
 end
 
+
+--This will be unneccessary since OpenRolls.lua will have its own copy of rolls
 function OpenRolls:HasEverybodyRolled()
     for i = 1, Group.Number() do
-        if strings[i]:Value() == -1 then 
+        if frame.strings[i]:Value() == -1 then 
             return false
         end
     end
     return true
 end
 
+
+--This will be moved to OpenRolls.lua
 function OpenRolls:PrintWinners(item, quantity)
     OpenRolls:Communicate("Roll over for " .. quantity .. "x" .. item)
-    if strings[1]:Value() < 1 then
+    if frame.strings[1]:Value() < 1 then
         OpenRolls:Communicate("   Nobody rolled")
         return
     end
     
     for i = 1, quantity do
-        if strings[i]:Value() < 1 then
+        if frame.strings[i]:Value() < 1 then
             return
         end
-        OpenRolls:Communicate(strings[i]:GetPlayer() .. " rolled " .. strings[i]:Value())
+        OpenRolls:Communicate(frame.strings[i]:GetPlayer() .. " rolled " .. frame.strings[i]:Value())
     end
 end
 
+
+--This will be moved to OpenRolls.lua
 function OpenRolls:Warning()
     if not OpenRollsData.Warning then return end
 
     OpenRolls:Communicate("The following players have not rolled: ")
     for i = 1, Group.Number() do
-        if strings[i]:Value() == -1 then
-            OpenRolls:Communicate("   " .. strings[i]:GetPlayer())
+        if frame.strings[i]:Value() == -1 then
+            OpenRolls:Communicate("   " .. frame.strings[i]:GetPlayer())
         end
     end
 end
 
+
+--This seems reasonable
 function OpenRolls:HideSummary()
     frame:Hide()
 end
@@ -172,10 +198,10 @@ function OpenRolls:StartRoll(item, quantity)
 end
 
 function OpenRolls:EndRoll()
-    title:SetText("Roll finished for " .. currentQuantity .. "x" .. currentItem)
+    frame.title:SetText("Roll finished for " .. currentQuantity .. "x" .. currentItem)
     for i = 1, Group.Number() do
-        if strings[i]:Value() == -1 then
-            strings[i]:PassRoll()
+        if frame.strings[i]:Value() == -1 then
+            frame.strings[i]:PassRoll()
         end
     end
     OpenRolls:PrintWinners(currentItem, currentQuantity)
@@ -192,26 +218,26 @@ function OpenRolls:EndRoll()
 end
 
 function OpenRolls:FillSummary(titl)
-    title:SetText(titl)
+    frame.title:SetText(titl)
     local height = 0
-    local del = strings[1]:GetHeight()
+    local del = frame.strings[1]:GetHeight()
     local i = 0
     for name, _, online in Group.Members() do
         i = i + 1
-        strings[i]:SetPlayer(name)
+        frame.strings[i]:SetPlayer(name)
         height = height + del
         if online then
-            strings[i]:ClearRoll()
+            frame.strings[i]:ClearRoll()
         else
-            strings[i]:SetOffline()
+            frame.strings[i]:SetOffline()
         end
-        strings[i]:Show()
+        frame.strings[i]:Show()
     end
     for i = Group.Number()+1, 40 do
-        strings[i]:Hide()
+        frame.strings[i]:Hide()
     end
-    group:SetHeight(height)
-    frame:SetHeight(title:GetTop() - close:GetBottom() + 24)
+    frame.group:SetHeight(height)
+    frame:SetHeight(frame.title:GetTop() - frame.close:GetBottom() + 24)
     Sort()
 end
 
@@ -237,7 +263,11 @@ function OpenRolls:SummaryHooks()
 end
 
 function OpenRolls:ShowSummary()
-    if strings[1]:GetPlayer() == "Not Yet Filled" then
+    --If we haven't rolled on an item yet, force a rebuild of the list so it reflects the current
+    --  raid status.  
+    --We don't do this if there's already been a roll because then we couldn't go back later and 
+    --  look at the results
+    if frame.title:GetText() == "No item" then
         OpenRolls:FillSummary("No item")
     end
     frame:Show()

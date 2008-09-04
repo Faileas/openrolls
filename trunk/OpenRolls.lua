@@ -97,12 +97,35 @@ function OpenRolls:InitializeSavedVariables()
     Init("Warning", true)
     Init("SilentTime", 25)
     Init("CountdownTime", 5)
+    Init("RollMin", 1)
+    Init("RollMax", 100)
+end
+
+local rolls = {}
+local function HasRolled(char)
+    return rolls[char] ~= nil and rolls[char] > 0
+end
+
+local function AssignRoll(msg, char, roll)
+    rolls[char] = roll
+    OpenRolls:AssignRoll(char, roll) 
+    OpenRolls:UpdateRollList()
+end
+
+local function ClearRoll(msg, char)
+    rolls[char] = nil
+end
+
+local function PassRoll(msg, char)
+    rolls[char] = -1
 end
 
 function OpenRolls:OnInitialize()
     OpenRolls:InitializeSavedVariables()
     NamesFrame.bankName:SetText(OpenRollsData.Banker)
     NamesFrame.chantName:SetText(OpenRollsData.Disenchanter)
+    
+    OpenRolls:RegisterMessage("OpenRolls_Roll", AssignRoll)
 end
 
 function OpenRolls:PLAYER_LEAVING_WORLD()
@@ -129,11 +152,22 @@ function OpenRolls:Roll(item, quantity)
                                   end})
     
     OpenRolls:RegisterMessage("RollTrack_Roll", function(msg, char, roll, min, max)
-        if not OpenRolls:AssignRoll(char, roll) then
+        if min ~= OpenRollsData.RollMin or max ~= OpenRollsData.RollMax then
+            SendChatMessage("You rolled with a non-standard range [" 
+                            .. OpenRollsData.RollMin .. ", " .. OpenRollsData.RollMax .. "]",
+                            "WHISPER", nil, char)
+            return
+        end
+        if HasRolled(char) then
             SendChatMessage("You have already rolled once for this item.", "WHISPER", nil, char)
             return
         end
-        OpenRolls:UpdateRollList()
+        OpenRolls:SendMessage("OpenRolls_Roll", char, roll)
+        --[[if not OpenRolls:AssignRoll(char, roll) then
+            SendChatMessage("You have already rolled once for this item.", "WHISPER", nil, char)
+            return
+        end
+        OpenRolls:UpdateRollList()]]--
     end)
     OpenRolls.timer = timer
 end
