@@ -4,6 +4,37 @@
 
 local Group = LibStub("GroupLib-1.0")
 
+local function Sort(self)
+    --this code was basically stolen from the wikipedia article on insertion sort
+    for i = 2, Group.Number() do
+        local value = self.strings[i]
+        local j = i - 1
+        while j >= 1 and self.strings[j]:Value() < value:Value() do--strings[j]:Compare(value) do
+            self.strings[j + 1] = self.strings[j]
+            j = j - 1
+        end
+        self.strings[j+1] = value
+    end
+    
+    self.strings[1]:SetPoint("TOP", self.group, "TOP")
+    for i = 2, 40 do
+        self.strings[i]:SetPoint("TOP", self.strings[i-1], "BOTTOM")
+    end
+    
+--[[insertionSort(array A)
+    for i = 1 to length[A]-1 do
+    begin
+        value = A[i]
+        j = i-1
+        while j >= 0 and A[j] > value do
+        begin
+            A[j + 1] = A[j]
+            j = j-1
+        end
+        A[j+1] = value
+    end]]--
+end
+
 local function CreateSummaryFrame(name, parent)
     local self = CreateFrame("frame", name, parent)
     self:SetBackdrop({
@@ -35,7 +66,7 @@ local function CreateSummaryFrame(name, parent)
 
     local strings = {}
     for i = 1, 40 do
-        local str = OpenRolls:CreateSummaryLine(name .. "String" .. i, group, "Not Yet Filled")
+        local str = OpenRolls:CreateSummaryLine(name .. "String" .. i, self, "Not Yet Filled")
         str:SetPoint("LEFT", group, "LEFT")
         str:SetPoint("RIGHT", group, "RIGHT")
         strings[i] = str
@@ -65,6 +96,7 @@ local function CreateSummaryFrame(name, parent)
     self.group = group
     self.strings = strings
     self.close = close
+    self.Sort = Sort
     
     return self
 end
@@ -84,42 +116,12 @@ local function RollValue(roll)
 end
 
 --This should be a member of the SummaryFrame object
-local function Sort()
-    --this code was basically stolen from the wikipedia article on insertion sort
-    for i = 2, Group.Number() do
-        local value = frame.strings[i]
-        local j = i - 1
-        while j >= 1 and frame.strings[j]:Value() < value:Value() do--strings[j]:Compare(value) do
-            frame.strings[j + 1] = frame.strings[j]
-            j = j - 1
-        end
-        frame.strings[j+1] = value
-    end
-    
-    frame.strings[1]:SetPoint("TOP", frame.group, "TOP")
-    for i = 2, 40 do
-        frame.strings[i]:SetPoint("TOP", frame.strings[i-1], "BOTTOM")
-    end
-    
---[[insertionSort(array A)
-    for i = 1 to length[A]-1 do
-    begin
-        value = A[i]
-        j = i-1
-        while j >= 0 and A[j] > value do
-        begin
-            A[j + 1] = A[j]
-            j = j-1
-        end
-        A[j+1] = value
-    end]]--
-end
 
 
 
 --This will be automated by listening for roll messages
 function OpenRolls:UpdateRollList()
-    Sort()
+    frame:Sort()
     if OpenRolls.timer and OpenRolls:HasEverybodyRolled() then
         OpenRolls:EndRoll(item, quantity)
     end
@@ -131,8 +133,8 @@ function OpenRolls:AssignRoll(name, roll)
     for i = 1, Group.Number() do
         if frame.strings[i]:GetPlayer() == name then
             if frame.strings[i]:Value() > 0 then return false end
-            frame.strings[i]:SetRoll(roll)
-            Sort()
+--            frame.strings[i]:SetRoll(roll)
+--            Sort()
             return true
         end
     end
@@ -238,7 +240,7 @@ function OpenRolls:FillSummary(titl)
     end
     frame.group:SetHeight(height)
     frame:SetHeight(frame.title:GetTop() - frame.close:GetBottom() + 24)
-    Sort()
+    frame:Sort()
 end
 
 local summaryHooks = {}

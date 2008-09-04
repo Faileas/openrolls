@@ -141,6 +141,7 @@ function OpenRolls:Roll(item, quantity)
         return
     end
     
+    rolls = {}
     OpenRolls:StartRoll(item, quantity)
     local timer = 
         OpenRolls:BeginCountdown({initial = OpenRollsData.SilentTime, count = OpenRollsData.CountdownTime},
