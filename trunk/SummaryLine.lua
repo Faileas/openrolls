@@ -4,6 +4,8 @@
 local tostring = tostring
 local pairs = pairs
 
+local Events = LibStub:GetLibrary("AceEvent-3.0")
+
 do
     local info = {} --used for popup menus
 
@@ -147,6 +149,13 @@ do
         
         return menu
     end
+
+    local function RegisterRoll(self, msg, char, roll)
+        if char == self:GetPlayer() then
+            self:SetRoll(roll)
+            self:GetParent():Sort()
+        end
+    end
     
     function OpenRolls:CreateSummaryLine(framename, parent, player)
         local self = CreateFrame("frame", framename, parent)
@@ -184,7 +193,11 @@ do
         self.SetOffline = SetOffline
         self.IsOffline = IsOffline
         self.Value = Value
-        self.Compare = Compare        
+        self.Compare = Compare
+        self.RegisterRoll = RegisterRoll
+
+        Events.RegisterMessage(self, "OpenRolls_Roll", "RegisterRoll")
+
         return self
     end
 end
