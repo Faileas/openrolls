@@ -1,8 +1,11 @@
+--Creates a single line for the summary frame.  Has methods to simplify setting the roll, getting
+--the current state [passed, et cetera], and sorting different rolls.
+
 local tostring = tostring
+local pairs = pairs
 
 do
-
-    local info = {}
+    local info = {} --used for popup menus
 
     local function GetRolledColor()
         return 0, 1, 0
@@ -106,6 +109,7 @@ do
     end
     
     local function CreateMenu(self, framename)
+        --This code was basically written by Xinhuan on the wowace forums...thanks :)
         local menu = CreateFrame("Frame", framename .. "Menu", self)
         menu.displayMode = "MENU"
         menu.initialize = function()    
