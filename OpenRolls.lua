@@ -77,6 +77,10 @@ end
 
 local NamesFrame = NamesFrame or CreateNameFrame()
 
+local SummaryFrame
+local currentItem, currentQuantity
+local timer
+
 function OpenRolls:GetDisenchanter()
     return NamesFrame.chantName:GetText()
 end
@@ -122,7 +126,7 @@ local function AssignRoll(msg, char, roll)
     for c, r in pairs(rolls) do
         if r == 0 then return end
     end
-    OpenRolls:EndRoll(item, quantity)
+    OpenRolls:EndRoll(currentItem, currentQuantity)
 end
 
 local function ClearRoll(msg, char)
@@ -133,6 +137,17 @@ local function PassRoll(msg, char)
     rolls[char] = -1
 end
 
+local function Warning()
+    if not OpenRollsData.Warning then return end
+
+    OpenRolls:Communicate("The following players have not rolled: ")
+    for c, r in pairs(rolls) do
+        if r == 0 then
+            OpenRolls:Communicate("   " .. c)
+        end
+    end
+end
+
 function OpenRolls:OnInitialize()
     OpenRolls:InitializeSavedVariables()
     NamesFrame.bankName:SetText(OpenRollsData.Banker)
@@ -141,6 +156,8 @@ function OpenRolls:OnInitialize()
     OpenRolls:RegisterMessage("OpenRolls_Roll", AssignRoll)
     OpenRolls:RegisterMessage("OpenRolls_Pass", AssignRoll)
     OpenRolls:RegisterMessage("OpenRolls_Clear", AssignRoll)
+    
+    SummaryFrame = OpenRolls:CreateSummaryFrame("OpenRollsSummaryFrame", UIParent)
 end
 
 function OpenRolls:PLAYER_LEAVING_WORLD()
@@ -148,14 +165,28 @@ function OpenRolls:PLAYER_LEAVING_WORLD()
     OpenRollsData.Banker = NamesFrame.bankName:GetText()
 end
 
-OpenRolls.timer = nil
+function OpenRolls:PrintWinners(item, quantity)
+    OpenRolls:Communicate("Roll over for " .. quantity .. "x" .. item)
+    if frame.strings[1]:Value() < 1 then
+        OpenRolls:Communicate("   Nobody rolled")
+        return
+    end
+    
+    for i = 1, quantity do
+        if frame.strings[i]:Value() < 1 then
+            return
+        end
+        OpenRolls:Communicate(frame.strings[i]:GetPlayer() .. " rolled " .. frame.strings[i]:Value())
+    end
+end
 
 function OpenRolls:Roll(item, quantity)
-    if OpenRolls.timer ~= nil then
+    if timer ~= nil then
         OpenRolls:Print("A roll is already in progress; please wait until it is finished before starting a new roll.")
         return
     end
     
+    OpenRolls:Communicate("Begin roll for " .. quantity .. "x" .. item .. ".")
     rolls = {}
     for name, _, online in Group.Members() do
         if online then
@@ -165,13 +196,17 @@ function OpenRolls:Roll(item, quantity)
         end
     end
     
-    OpenRolls:StartRoll(item, quantity)
-    local timer = 
-        OpenRolls:BeginCountdown({initial = OpenRollsData.SilentTime, count = OpenRollsData.CountdownTime},
+    currentItem = item
+    currentQuantity = quantity
+    SummaryFrame:BeginRoll(item, quantity)
+    SummaryFrame:ShowSummary()
+    timer = 
+        OpenRolls:BeginCountdown({initial = OpenRollsData.SilentTime, 
+                                 count = OpenRollsData.CountdownTime},
                                  "Communicate",
-                                 {initial = "Warning",
+                                 {initial = Warning,
                                   count = function() 
-                                    OpenRolls:EndRoll(item, quantity)
+                                    SummaryFrame:EndRoll(item, quantity)
                                     OpenRolls:UnregisterMessage("RollTrack_Roll")
                                   end})
     
@@ -188,7 +223,6 @@ function OpenRolls:Roll(item, quantity)
         end
         OpenRolls:SendMessage("OpenRolls_Roll", char, roll)
     end)
-    OpenRolls.timer = timer
 end
 
 function OpenRolls:DistributeItemByName(player, window, followup)
@@ -211,6 +245,24 @@ function OpenRolls:DistributeItemByName(player, window, followup)
     return false
 end
 
+function OpenRolls:EndRoll(item, quantity)
+    OpenRolls:UnregisterMessage("RollTrack_Roll")
+    for c, r in pairs(rolls) do
+        if r == 0 then OpenRolls:SendMessage("OpenRolls_Pass") end
+    end
+    
+    OpenRolls:PrintWinners(item, quantity)
+    if OpenRollsData.ShowSummaryWhenRollsOver then
+        OpenRolls:ShowSummary()
+    end
+    
+    OpenRolls:CancelCountdown(OpenRolls.timer)
+
+    timer = nil
+    currentItem = nil
+    currentQuantity = nil
+end
+
 local function CommandLine(str)
     local found, _, item, quantity = str:find("^(" .. ItemLinkPattern ..")%s*(%d*)$")
     if found then
@@ -225,7 +277,7 @@ local function CommandLine(str)
     end
     
     if str == "" then
-        OpenRolls:ShowSummary()
+        SummaryFrame:ShowSummary()
         return
     end
     
