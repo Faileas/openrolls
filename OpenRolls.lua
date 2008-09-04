@@ -355,31 +355,3 @@ OpenRolls:RegisterEvent("LOOT_CLOSED")
 OpenRolls:RegisterEvent("LOOT_SLOT_CLEARED")
 OpenRolls:RegisterEvent("PLAYER_LEAVING_WORLD")
 
-OpenRollsTestAddon = {}
-function OpenRollsTestAddon:CreateLootWindow(slot, parent)
-    local f = CreateFrame("frame", "OpenRollsTestWindow" .. slot, parent)
-    f:SetPoint("TOPLEFT", UIParent, "TOPLEFT")
-    f:SetHeight(40)
-    f:SetWidth(100)
-    
-    local greed = CreateFrame("button", "OpenRollsTestWindowGreed" .. slot, f, "UIPanelButtonTemplate")
-    greed:SetPoint("TOPLEFT", f, "TOPLEFT")
-    greed:SetHeight(20)
-    greed:SetWidth(100)
-    greed:SetText("Greed")
-    greed:SetScript("OnClick", function(frame, ...)
-        OpenRolls:Print("Greed " .. slot)
-    end)
-    
-    local need = CreateFrame("button", "OpenRollsTestWindowNeed" .. slot, f, "UIPanelButtonTemplate")
-    need:SetPoint("TOPLEFT", greed, "BOTTOMLEFT")
-    need:SetHeight(20)
-    need:SetWidth(100)
-    need:SetText("Need")
-    need:SetScript("OnClick", function(frame, ...)
-        OpenRolls:Print("Need " .. slot)
-    end)
-    
-    return f
-end
-
