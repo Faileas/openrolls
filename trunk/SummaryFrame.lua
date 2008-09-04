@@ -35,7 +35,66 @@ local function Sort(self)
     end]]--
 end
 
-local function CreateSummaryFrame(name, parent)
+local function BeginRoll(self, item, quantity)
+    self:SetTitle("Roll in progress for " .. quantity .. "x" .. item)
+    self:BuildList()
+end
+
+local function EndRoll(self, item, quantity)
+    self:SetTitle("Roll finished for " .. quantity .. "x" .. item)
+    local strings = self.strings
+    for i = 1, Group.Number() do 
+        if strings[i]:Value() == -1 then 
+            strings[i]:PassRoll() 
+        end 
+    end 
+end
+
+local function ShowSummary(self)
+    --If we haven't rolled on an item yet, force a rebuild of the list so it reflects the current
+    --  raid status.  
+    --We don't do this if there's already been a roll because then we couldn't go back later and 
+    --  look at the results
+    if self:GetTitle() == "No item" then
+        self:SetTitle("No item")
+        self:BuildList()
+    end
+    self:Show()
+end
+
+local function BuildList(self)
+    local height = 0
+    local strings = self.strings
+    local del = strings[1]:GetHeight()
+    local i = 0
+    for name, _, online in Group.Members() do
+        i = i + 1
+        strings[i]:SetPlayer(name)
+        height = height + del
+        if online then
+            strings[i]:ClearRoll()
+        else
+            strings[i]:SetOffline()
+        end
+        strings[i]:Show()
+    end
+    for i = Group.Number()+1, 40 do
+        strings[i]:Hide()
+    end
+    self.group:SetHeight(height)
+    self:SetHeight(self.title:GetTop() - self.close:GetBottom() + 24)
+    self:Sort()
+end
+
+local function SetTitle(self, title)
+    self.title:SetText(title)
+end
+
+local function GetTitle(self)
+    return self.title:GetText()
+end
+
+function OpenRolls:CreateSummaryFrame(name, parent)
     local self = CreateFrame("frame", name, parent)
     self:SetBackdrop({
         bgFile="Interface\\DialogFrame\\UI-DialogBox-Background",
@@ -97,127 +156,22 @@ local function CreateSummaryFrame(name, parent)
     self.strings = strings
     self.close = close
     self.Sort = Sort
+    self.BeginRoll = BeginRoll
+    self.EndRoll = EndRoll
+    self.ShowSummary = ShowSummary
+    self.BuildList = BuildList
+    self.SetTitle = SetTitle
+    self.GetTitle = GetTitle
     
     return self
 end
-local frame = CreateSummaryFrame("OpenRollsSummaryFrame", UIParent)
 
---This function can probably be removed
-local function RollValue(roll)
-    if roll == "Offline" then 
-        return -2
-    elseif roll == "Waiting..." then
-        return -1
-    elseif roll == "Passed" then
-        return 0
-    else
-        return tonumber(roll)
-    end
-end
-
---This will be unneccessary since OpenRolls.lua will have its own copy of rolls
-function OpenRolls:HasEverybodyRolled()
-    for i = 1, Group.Number() do
-        if frame.strings[i]:Value() == -1 then 
-            return false
-        end
-    end
-    return true
-end
-
-
---This will be moved to OpenRolls.lua
-function OpenRolls:PrintWinners(item, quantity)
-    OpenRolls:Communicate("Roll over for " .. quantity .. "x" .. item)
-    if frame.strings[1]:Value() < 1 then
-        OpenRolls:Communicate("   Nobody rolled")
-        return
-    end
-    
-    for i = 1, quantity do
-        if frame.strings[i]:Value() < 1 then
-            return
-        end
-        OpenRolls:Communicate(frame.strings[i]:GetPlayer() .. " rolled " .. frame.strings[i]:Value())
-    end
-end
-
-
---This will be moved to OpenRolls.lua
-function OpenRolls:Warning()
-    if not OpenRollsData.Warning then return end
-
-    OpenRolls:Communicate("The following players have not rolled: ")
-    for i = 1, Group.Number() do
-        if frame.strings[i]:Value() == -1 then
-            OpenRolls:Communicate("   " .. frame.strings[i]:GetPlayer())
-        end
-    end
-end
-
-
---This seems reasonable
-function OpenRolls:HideSummary()
-    frame:Hide()
-end
-
-local currentItem, currentQuantity
-
-function OpenRolls:StartRoll(item, quantity)
-    OpenRolls:Communicate("Open roll for " .. quantity .. "x" .. item)
-    OpenRolls:FillSummary("Roll in progress for " .. quantity .. "x" .. item)
-    OpenRolls:ShowSummary()
-    
-    currentItem = item
-    currentQuantity = quantity
-end
-
-function OpenRolls:EndRoll()
-    frame.title:SetText("Roll finished for " .. currentQuantity .. "x" .. currentItem)
-    for i = 1, Group.Number() do
-        if frame.strings[i]:Value() == -1 then
-            frame.strings[i]:PassRoll()
-        end
-    end
-    OpenRolls:PrintWinners(currentItem, currentQuantity)
-    if OpenRollsData.ShowSummaryWhenRollsOver then
-        OpenRolls:ShowSummary()
-    end
-    
-    OpenRolls:UnregisterMessage("RollTrack_Roll")
-    OpenRolls:CancelCountdown(OpenRolls.timer)
-    
-    currentItem = nil
-    currentQuantity = nil
-    OpenRolls.timer = nil
-end
-
-function OpenRolls:FillSummary(titl)
-    frame.title:SetText(titl)
-    local height = 0
-    local del = frame.strings[1]:GetHeight()
-    local i = 0
-    for name, _, online in Group.Members() do
-        i = i + 1
-        frame.strings[i]:SetPlayer(name)
-        height = height + del
-        if online then
-            frame.strings[i]:ClearRoll()
-        else
-            frame.strings[i]:SetOffline()
-        end
-        frame.strings[i]:Show()
-    end
-    for i = Group.Number()+1, 40 do
-        frame.strings[i]:Hide()
-    end
-    frame.group:SetHeight(height)
-    frame:SetHeight(frame.title:GetTop() - frame.close:GetBottom() + 24)
-    frame:Sort()
-end
 
 local summaryHooks = {}
 
+--Support for Summary Hooks
+--Third party addons call AddSummaryHook in order to get extra information added to the
+--  mouseover text for characters in the summary frame
 function OpenRolls:AddSummaryHook(name, single, func)
     table.insert(summaryHooks, {name = name, single = single, func = func})
 end
@@ -235,15 +189,4 @@ function OpenRolls:SummaryHooks()
         if i > #summaryHooks then return nil end
         return summaryHooks[i].single, summaryHooks[i].func
     end
-end
-
-function OpenRolls:ShowSummary()
-    --If we haven't rolled on an item yet, force a rebuild of the list so it reflects the current
-    --  raid status.  
-    --We don't do this if there's already been a roll because then we couldn't go back later and 
-    --  look at the results
-    if frame.title:GetText() == "No item" then
-        OpenRolls:FillSummary("No item")
-    end
-    frame:Show()
 end
