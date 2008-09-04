@@ -128,13 +128,17 @@ do
 
             -- Menu Item 1
             info.text		= "Pass"
-            info.func		= function() self:PassRoll() OpenRolls:UpdateRollList() end
+            info.func		= function() 
+                                Events:SendMessage("OpenRolls_Pass", self:GetPlayer()) 
+                              end
             info.arg1		= 1
             UIDropDownMenu_AddButton(info, level)
             
             --Menu Item 2
             info.text		= "Reset"
-            info.func		= function(arg1) self:ClearRoll() OpenRolls:UpdateRollList() end
+            info.func		= function(arg1) 
+                                Events:SendMessage("OpenRolls_Clear", self:GetPlayer())
+                              end
             info.arg1		= 2
             UIDropDownMenu_AddButton(info, level)
 
@@ -152,7 +156,15 @@ do
 
     local function RegisterRoll(self, msg, char, roll)
         if char == self:GetPlayer() then
-            self:SetRoll(roll)
+            if msg == "OpenRolls_Roll" then
+                self:SetRoll(roll)
+            elseif msg == "OpenRolls_Pass" then
+                self:PassRoll()
+            elseif msg == "OpenRolls_Clear" then
+                self:ClearRoll()
+            else
+                error("OpenRolls: SummaryLine.RegisterRoll: unknown argument type '" .. msg .. "'.", 3)
+            end
             self:GetParent():Sort()
         end
     end
@@ -197,6 +209,8 @@ do
         self.RegisterRoll = RegisterRoll
 
         Events.RegisterMessage(self, "OpenRolls_Roll", "RegisterRoll")
+        Events.RegisterMessage(self, "OpenRolls_Pass", "RegisterRoll")
+        Events.RegisterMessage(self, "OpenRolls_Clear", "RegisterRoll")
 
         return self
     end

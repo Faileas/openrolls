@@ -1,5 +1,8 @@
 OpenRolls = LibStub("AceAddon-3.0"):NewAddon("OpenRolls", 
     "AceConsole-3.0", "AceEvent-3.0", "AceTimer-3.0", "GroupLib-1.0", "Countdown-1.0")
+
+local Group = LibStub("GroupLib-1.0")
+    
 OpenRollsData = {}
 
 local ItemLinkPattern = "|c%x+|H.+|h%[.+%]|h|r"
@@ -107,13 +110,23 @@ local function HasRolled(char)
 end
 
 local function AssignRoll(msg, char, roll)
-    rolls[char] = roll
-    OpenRolls:AssignRoll(char, roll) 
-    OpenRolls:UpdateRollList()
+    if msg == "OpenRolls_Roll" then
+        rolls[char] = roll
+    elseif msg == "OpenRolls_Pass" then
+        rolls[char] = -2
+    elseif msg == "OpenRolls_Clear" then
+        rolls[char] = 0
+    else
+        error("OpenRolls: AssignRoll: unknown argument type '" .. msg .. "'.", 3)
+    end
+    for c, r in pairs(rolls) do
+        if r == 0 then return end
+    end
+    OpenRolls:EndRoll(item, quantity)
 end
 
 local function ClearRoll(msg, char)
-    rolls[char] = nil
+    rolls[char] = 0
 end
 
 local function PassRoll(msg, char)
@@ -126,6 +139,8 @@ function OpenRolls:OnInitialize()
     NamesFrame.chantName:SetText(OpenRollsData.Disenchanter)
     
     OpenRolls:RegisterMessage("OpenRolls_Roll", AssignRoll)
+    OpenRolls:RegisterMessage("OpenRolls_Pass", AssignRoll)
+    OpenRolls:RegisterMessage("OpenRolls_Clear", AssignRoll)
 end
 
 function OpenRolls:PLAYER_LEAVING_WORLD()
@@ -142,6 +157,14 @@ function OpenRolls:Roll(item, quantity)
     end
     
     rolls = {}
+    for name, _, online in Group.Members() do
+        if online then
+            rolls[name] = 0
+        else
+            rolls[name] = -1
+        end
+    end
+    
     OpenRolls:StartRoll(item, quantity)
     local timer = 
         OpenRolls:BeginCountdown({initial = OpenRollsData.SilentTime, count = OpenRollsData.CountdownTime},
@@ -164,11 +187,6 @@ function OpenRolls:Roll(item, quantity)
             return
         end
         OpenRolls:SendMessage("OpenRolls_Roll", char, roll)
-        --[[if not OpenRolls:AssignRoll(char, roll) then
-            SendChatMessage("You have already rolled once for this item.", "WHISPER", nil, char)
-            return
-        end
-        OpenRolls:UpdateRollList()]]--
     end)
     OpenRolls.timer = timer
 end

@@ -115,33 +115,6 @@ local function RollValue(roll)
     end
 end
 
---This should be a member of the SummaryFrame object
-
-
-
---This will be automated by listening for roll messages
-function OpenRolls:UpdateRollList()
-    frame:Sort()
-    if OpenRolls.timer and OpenRolls:HasEverybodyRolled() then
-        OpenRolls:EndRoll(item, quantity)
-    end
-end
-
-
---This will be automated by listening for roll messages
-function OpenRolls:AssignRoll(name, roll)
-    for i = 1, Group.Number() do
-        if frame.strings[i]:GetPlayer() == name then
-            if frame.strings[i]:Value() > 0 then return false end
---            frame.strings[i]:SetRoll(roll)
---            Sort()
-            return true
-        end
-    end
-    return false
-end
-
-
 --This will be unneccessary since OpenRolls.lua will have its own copy of rolls
 function OpenRolls:HasEverybodyRolled()
     for i = 1, Group.Number() do
