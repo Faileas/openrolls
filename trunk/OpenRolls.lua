@@ -1,6 +1,7 @@
 OpenRolls = LibStub("AceAddon-3.0"):NewAddon("OpenRolls", 
     "AceConsole-3.0", "AceEvent-3.0", "AceTimer-3.0", "GroupLib-1.0", "Countdown-1.0")
 
+--I think this can be removed?
 local Group = LibStub("GroupLib-1.0")
     
 OpenRollsData = {}
@@ -113,12 +114,12 @@ local function HasRolled(char)
     return rolls[char] ~= nil and rolls[char] > 0
 end
 
-local function AssignRoll(msg, char, roll)
-    if msg == "OpenRolls_Roll" then
+local function AssignRoll(char, msg, roll)
+    if msg == "roll" then
         rolls[char] = roll
-    elseif msg == "OpenRolls_Pass" then
+    elseif msg == "pass" then
         rolls[char] = -2
-    elseif msg == "OpenRolls_Clear" then
+    elseif msg == "clear" then
         rolls[char] = 0
     else
         error("OpenRolls: AssignRoll: unknown argument type '" .. msg .. "'.", 3)
@@ -153,11 +154,7 @@ function OpenRolls:OnInitialize()
     NamesFrame.bankName:SetText(OpenRollsData.Banker)
     NamesFrame.chantName:SetText(OpenRollsData.Disenchanter)
     
-    OpenRolls:RegisterMessage("OpenRolls_Roll", AssignRoll)
-    OpenRolls:RegisterMessage("OpenRolls_Pass", AssignRoll)
-    OpenRolls:RegisterMessage("OpenRolls_Clear", AssignRoll)
-    
-    SummaryFrame = OpenRolls:CreateSummaryFrame("OpenRollsSummaryFrame", UIParent)
+    SummaryFrame = OpenRolls:CreateSummaryFrame("OpenRollsSummaryFrame", AssignRoll)
 end
 
 function OpenRolls:PLAYER_LEAVING_WORLD()
@@ -167,7 +164,7 @@ end
 
 function OpenRolls:PrintWinners(item, quantity)
     OpenRolls:Communicate("Roll over for " .. quantity .. "x" .. item)
-    if frame.strings[1]:Value() < 1 then
+    --[[if frame.strings[1]:Value() < 1 then
         OpenRolls:Communicate("   Nobody rolled")
         return
     end
@@ -177,7 +174,7 @@ function OpenRolls:PrintWinners(item, quantity)
             return
         end
         OpenRolls:Communicate(frame.strings[i]:GetPlayer() .. " rolled " .. frame.strings[i]:Value())
-    end
+    end]]--
 end
 
 function OpenRolls:Roll(item, quantity)
@@ -221,7 +218,8 @@ function OpenRolls:Roll(item, quantity)
             SendChatMessage("You have already rolled once for this item.", "WHISPER", nil, char)
             return
         end
-        OpenRolls:SendMessage("OpenRolls_Roll", char, roll)
+        AssignRoll(char, "roll", roll)
+        SummaryFrame:AssignRoll(char, "roll", roll)
     end)
 end
 
@@ -256,7 +254,7 @@ function OpenRolls:EndRoll(item, quantity)
         OpenRolls:ShowSummary()
     end
     
-    OpenRolls:CancelCountdown(OpenRolls.timer)
+    OpenRolls:CancelCountdown(timer)
 
     timer = nil
     currentItem = nil
@@ -297,6 +295,17 @@ local function RepositionLootWindows()
         lewt[i]:ClearAllPoints()
         lewt[i]:SetPoint("TOPLEFT", lewt[i-1], "BOTTOMLEFT")
     end
+end
+
+--Support for Summary Hooks
+--Third party addons call AddSummaryHook in order to get extra information added to the
+--  mouseover text for characters in the summary frame
+function OpenRolls:AddSummaryHook(name, single, func)
+    SummaryFrame:AddHook(name, single, func)
+end
+
+function OpenRolls:RemoveSummaryHook(name)
+    SummaryFrame:RemoveHook(name)
 end
 
 local AttachedLootWindows = {}

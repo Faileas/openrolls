@@ -1,8 +1,30 @@
---THIS FILE NEEDS TO BE CLEANED UP
---Handles everything involving the actual Summary Frame.  Unfortunately, this includes things like
---starting and ending rolls that really belongs more in the OpenRolls.lua file.  Need to fix that.
+--Handles everything involving the actual Summary Frame.
 
 local Group = LibStub("GroupLib-1.0")
+
+local function Callback(self, callback, ...)
+    if callback == nil then return end
+    if type(callback) == "string" then
+        self[callback](self, ...)
+    else
+        callback(...)
+    end
+end
+
+local function ValidateCallback(self, callback, source, callbackname)
+	if type(callback) ~= "string" and type(callback) ~= "function" then 
+		error("OpenRolls: " .. source ..": '" .. callbackname .. "' - function or method name expected.", 3)
+	end
+	if type(callback) == "string" then
+		if type(self)~="table" then
+			error("OpenRolls: " .. source .. ": 'self' - must be a table.", 3)
+		end
+		if type(self[callback]) ~= "function" then 
+			error("OpenRolls: " .. source .. ": '" .. callbackname .. "' - method not found on target object.", 3)
+		end
+	end
+    return true
+end
 
 local function Sort(self)
     --this code was basically stolen from the wikipedia article on insertion sort
@@ -94,7 +116,50 @@ local function GetTitle(self)
     return self.title:GetText()
 end
 
-function OpenRolls:CreateSummaryFrame(name, parent)
+local function AddHook(self, name, single, func)
+    table.insert(self.hooks, {name = name, single = single, func = func})
+end
+
+local function RemoveHook(self, name)
+    for i, j in pairs(self.hooks) do
+        if j.name == name then table.remove(self.hooks, i) return end
+    end
+end
+
+local function Hooks(self)
+    local i = 0
+    return function() 
+        i = i + 1
+        if i > #self.hooks then return nil end
+        return self.hooks[i].single, self.hooks[i].func
+    end
+end
+
+local function InformRoll(self, char, typeof, roll)
+    Callback(self.owner, self.callback, char, typeof, roll)
+end
+
+local function AssignRoll(self, char, typeof, roll)
+    for _, i in pairs(self.strings) do
+        if i:GetPlayer() == char then i:RegisterRoll(char, typeof, roll) end
+    end
+end
+
+--This creates the actual frame
+--owner is the addon creating the frame, it can be nil if callback is a function
+--name is the standard frame name
+--callback is the method called to modify rolls; either string or method
+--   string is called as owner[callback](char, type, roll)
+--   method is simply called callback(char, type, roll)
+--   char is the character who's roll is modified
+--   type is either 'roll' 'pass' 'disqualify' or 'reset'
+--   roll is the value changed when type == 'roll'
+--parent is the standard frame parent; if nil defaults to UIParent
+function OpenRolls.CreateSummaryFrame(owner, name, callback, parent)
+    if parent == nil then parent = UIParent end
+    
+    ValidateCallback(owner, callback, "CreateSummaryFrame", "callback")
+    
     local self = CreateFrame("frame", name, parent)
     self:SetBackdrop({
         bgFile="Interface\\DialogFrame\\UI-DialogBox-Background",
@@ -149,6 +214,8 @@ function OpenRolls:CreateSummaryFrame(name, parent)
     group:SetHeight(strings[1]:GetTop() - strings[40]:GetBottom())
     self:SetHeight(title:GetTop() - close:GetBottom() + 24)
 
+    self.hooks = {}
+    
     self:Hide()
 
     self.title = title
@@ -162,31 +229,14 @@ function OpenRolls:CreateSummaryFrame(name, parent)
     self.BuildList = BuildList
     self.SetTitle = SetTitle
     self.GetTitle = GetTitle
+    self.AddHook = AddHook
+    self.RemoveHook = RemoveHook
+    self.Hooks = Hooks
+    
+    self.owner = owner
+    self.callback = callback
+    self.InformRoll = InformRoll
+    self.AssignRoll = AssignRoll
     
     return self
-end
-
-
-local summaryHooks = {}
-
---Support for Summary Hooks
---Third party addons call AddSummaryHook in order to get extra information added to the
---  mouseover text for characters in the summary frame
-function OpenRolls:AddSummaryHook(name, single, func)
-    table.insert(summaryHooks, {name = name, single = single, func = func})
-end
-
-function OpenRolls:RemoveSummaryHook(name)
-    for i, j in pairs(summaryHooks) do
-        if j.name == name then table.remove(summaryHooks, i) return end
-    end
-end
-
-function OpenRolls:SummaryHooks()
-    local i = 0
-    return function() 
-        i = i + 1
-        if i > #summaryHooks then return nil end
-        return summaryHooks[i].single, summaryHooks[i].func
-    end
 end

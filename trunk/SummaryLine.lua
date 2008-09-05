@@ -29,7 +29,7 @@ do
         local GameTooltip = GameTooltip
         GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT")
         GameTooltip:AddDoubleLine(self.name, self.RollString:GetText(), self.r, self.g, self.b, self.r, self.g, self.b)
-        for single, func in OpenRolls:SummaryHooks() do
+        for single, func in self:GetParent():Hooks() do
             if single then
                 GameTooltip:AddLine(func(self.name, self.roll))
             else
@@ -129,7 +129,8 @@ do
             -- Menu Item 1
             info.text		= "Pass"
             info.func		= function() 
-                                Events:SendMessage("OpenRolls_Pass", self:GetPlayer()) 
+                                self:PassRoll()
+                                self:GetParent():InformRoll(self:GetPlayer(), "pass")
                               end
             info.arg1		= 1
             UIDropDownMenu_AddButton(info, level)
@@ -137,7 +138,8 @@ do
             --Menu Item 2
             info.text		= "Reset"
             info.func		= function(arg1) 
-                                Events:SendMessage("OpenRolls_Clear", self:GetPlayer())
+                                self:ClearRoll()
+                                self:GetParent():InformRoll(self:GetPlayer(), "clear")
                               end
             info.arg1		= 2
             UIDropDownMenu_AddButton(info, level)
@@ -154,13 +156,13 @@ do
         return menu
     end
 
-    local function RegisterRoll(self, msg, char, roll)
+    local function RegisterRoll(self, char, msg, roll)
         if char == self:GetPlayer() then
-            if msg == "OpenRolls_Roll" then
+            if msg == "roll" then
                 self:SetRoll(roll)
-            elseif msg == "OpenRolls_Pass" then
+            elseif msg == "pass" then
                 self:PassRoll()
-            elseif msg == "OpenRolls_Clear" then
+            elseif msg == "clear" then
                 self:ClearRoll()
             else
                 error("OpenRolls: SummaryLine.RegisterRoll: unknown argument type '" .. msg .. "'.", 3)
@@ -207,10 +209,6 @@ do
         self.Value = Value
         self.Compare = Compare
         self.RegisterRoll = RegisterRoll
-
-        Events.RegisterMessage(self, "OpenRolls_Roll", "RegisterRoll")
-        Events.RegisterMessage(self, "OpenRolls_Pass", "RegisterRoll")
-        Events.RegisterMessage(self, "OpenRolls_Clear", "RegisterRoll")
 
         return self
     end
