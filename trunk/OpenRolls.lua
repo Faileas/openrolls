@@ -12,6 +12,28 @@ local tonumber = tonumber
 local table = table
 local pairs = pairs
 
+local function mysort(tbl, comp)
+    local newtbl = {}
+    local k = 1
+    for i,j in pairs(tbl) do
+        newtbl[k] = {key = i, value = j}
+        k = k + 1
+    end
+    for i = 2, #newtbl do
+        local value = newtbl[i]
+        local j = i - 1
+        while j >= 1 and comp(newtbl[j], value) do--strings[j]:Compare(value) do
+            newtbl[j + 1] = newtbl[j]
+            j = j - 1
+        end
+        newtbl[j+1] = value
+    end
+    for i, j in pairs(newtbl) do
+        OpenRolls:Print(i .. " -- " .. j.key .. " -- " .. j.value)
+    end
+    return newtbl
+end
+
 local function CreateNameFrame()
     local frame = CreateFrame("Frame", "OpenRollsNameFrame", UIParent)
     frame:SetBackdrop({
@@ -164,17 +186,22 @@ end
 
 function OpenRolls:PrintWinners(item, quantity)
     OpenRolls:Communicate("Roll over for " .. quantity .. "x" .. item)
-    --[[if frame.strings[1]:Value() < 1 then
+    local winners = mysort(rolls, function(i,j) return i.value < j.value end)
+    if winners[1].value < 1 then
         OpenRolls:Communicate("   Nobody rolled")
-        return
     end
     
     for i = 1, quantity do
-        if frame.strings[i]:Value() < 1 then
+        if winners[i] == nil or winners[i].value < 1 then
             return
         end
-        OpenRolls:Communicate(frame.strings[i]:GetPlayer() .. " rolled " .. frame.strings[i]:Value())
-    end]]--
+        OpenRolls:Communicate(winners[i].key .. " rolled " .. winners[i].value)
+    end
+    local i = quantity + 1
+    while winners[i] ~= nil and winners[i].value == winners[i-1].value do
+        OpenRolls:Communicate(winners[i].key .. " rolled " .. winners[i].value)
+        i = i + 1
+    end
 end
 
 function OpenRolls:Roll(item, quantity)
