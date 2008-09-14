@@ -2,6 +2,10 @@
 
 local Group = LibStub("GroupLib-1.0")
 
+--These two functions handle callbacks; the base of the code originated within some Ace library
+--  but I can't seem to find it anymore.  I don't particularly care for ValidateCallback, its 
+--  terribly convoluted, but I'm too lazy to fix it
+--Thanks to whoever wrote the original code, though
 local function Callback(self, callback, ...)
     if callback == nil then return end
     if type(callback) == "string" then
@@ -26,8 +30,11 @@ local function ValidateCallback(self, callback, source, callbackname)
     return true
 end
 
+
+--A sort routine, since lua's is basically worthless
+--It sorts the names on the summary frame according to their current roll
 local function Sort(self)
-    --this code was basically stolen from the wikipedia article on insertion sort
+    --this algorithm was basically stolen from the wikipedia article on insertion sort
     for i = 2, Group.Number() do
         local value = self.strings[i]
         local j = i - 1
@@ -72,6 +79,9 @@ local function EndRoll(self, item, quantity)
     end 
 end
 
+--Shows the summary frame.  If a roll hasn't been made with the frame, the character list
+--  is rebuilt each time it is opened.  Otherwise, the frame is just shown without changing 
+--  anything
 local function ShowSummary(self)
     --If we haven't rolled on an item yet, force a rebuild of the list so it reflects the current
     --  raid status.  
@@ -84,6 +94,7 @@ local function ShowSummary(self)
     self:Show()
 end
 
+--This goes through the current group and adds the players to the summary frame
 local function BuildList(self)
     local height = 0
     local strings = self.strings
@@ -116,6 +127,14 @@ local function GetTitle(self)
     return self.title:GetText()
 end
 
+--Attaches/removes additional information to the mouseover text for a specific character
+--name is the name of the addon, or some other unique identifier
+--single determains if we are adding a single line or a double line
+--  true -- http://www.wowwiki.com/API_GameTooltip_AddLine
+--  false -- http://www.wowwiki.com/API_GameTooltip_AddDoubleLine
+--func is called as func(name, roll)
+--  The return values are passed directly to one of the above functions, as determined
+--  by the value of single
 local function AddHook(self, name, single, func)
     table.insert(self.hooks, {name = name, single = single, func = func})
 end
@@ -126,6 +145,7 @@ local function RemoveHook(self, name)
     end
 end
 
+--Iterates over the current summary hooks
 local function Hooks(self)
     local i = 0
     return function() 
@@ -135,10 +155,20 @@ local function Hooks(self)
     end
 end
 
+
+--Tells the addon that created the summary frame that a roll was directly manipulated
+--  via the frame -- uses the callback provided when the frame was originally created
+--char is the character
+--typeof is 'roll' 'pass' or 'disqualify' or 'reset'
+--roll is the value of the roll, only used if typeof=='roll'
 local function InformRoll(self, char, typeof, roll)
     Callback(self.owner, self.callback, char, typeof, roll)
 end
 
+--Tells the summary frame that a roll was directly manipulated by the parent addon
+--char is the character
+--typeof is 'roll' 'pass' or 'disqualify' or 'reset'
+--roll is the value of the roll, only used if typeof=='roll'
 local function AssignRoll(self, char, typeof, roll)
     for _, i in pairs(self.strings) do
         if i:GetPlayer() == char then i:RegisterRoll(char, typeof, roll) end

@@ -1,6 +1,14 @@
 local OpenRolls = LibStub("AceAddon-3.0"):GetAddon("OpenRolls")
 
+--Handles the creation of a loot window
+
 do
+    --A simple helper function for frames that want to have mouseover text
+    --  frame is the frame the text should be attached to
+    --  text is the text to show
+    --  r, g, b, a is the color the text should appear in
+    --The frame gets EnableMouse() called on it, and assigned a script for the 
+    --  OnEnter and OnLeave events
     local function AttachMouseoverText(frame, text, r, g, b, a)
         frame:EnableMouse()
         frame:SetScript("OnEnter", function(self, ...) 
@@ -12,11 +20,19 @@ do
         frame:SetScript("OnLeave", function(self, ...) GameTooltip:Hide() end)
     end
     
+
+    --I think this is what's neccessary to free a frame for garbage collection
     local function Release(self)
         self:ClearAllPoints()
         self:Hide()
     end
     
+    --Attaches a third party addon's loot window to our own
+    --  addon must have a function called CreateLootWindow that returns the addon's loot frame
+    --  The frame has all points cleared before being attached, so it needs to be self contained
+    --    in this regard
+    --Further, the frame gets two new functions added to it, SetAssign and GetAssign.  They are 
+    --  used so the addon has access to the assignment frame of the base loot window
     local function AttachLootWindow(self, addon)
         if type(addon.CreateLootWindow) ~= "function" then
             error("OpenRolls: Function CreateLootWindow not found on addon object")

@@ -1,6 +1,15 @@
+--[[
+Provides the configuration panel within the Blizzard options frame
+]]--
+
 do    
     local pairs = pairs
     
+    --Builds a series of radio buttons on top of each other
+    --name and parent are self explanatory
+    --options is a table with each element corresponding to a button
+    --  the index is the value that should be returned by GetSetting when that button is selected
+    --  the value is the text that should show next to the button itself
     local function CreateRadioGroup(options, name, parent)
         local frame = CreateFrame("frame", name, parent)
         local radio = {}

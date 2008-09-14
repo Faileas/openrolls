@@ -1,17 +1,19 @@
 OpenRolls = LibStub("AceAddon-3.0"):NewAddon("OpenRolls", 
     "AceConsole-3.0", "AceEvent-3.0", "AceTimer-3.0", "GroupLib-1.0", "Countdown-1.0")
 
---I think this can be removed?
+--I think this can be removed?  I really shouldn't have included a library I wrote as an expriment ><
 local Group = LibStub("GroupLib-1.0")
     
 OpenRollsData = {}
 
+--Regex that matches an item link
 local ItemLinkPattern = "|c%x+|H.+|h%[.+%]|h|r"
 
 local tonumber = tonumber
 local table = table
 local pairs = pairs
 
+--Sorts a table according to value instead of by key; comp is the comparison function
 local function mysort(tbl, comp)
     local newtbl = {}
     local k = 1
@@ -28,12 +30,10 @@ local function mysort(tbl, comp)
         end
         newtbl[j+1] = value
     end
-    for i, j in pairs(newtbl) do
-        OpenRolls:Print(i .. " -- " .. j.key .. " -- " .. j.value)
-    end
     return newtbl
 end
 
+--Creates the "Banker" and "Disenchanter" frames that get tacked above the default loot window
 local function CreateNameFrame()
     local frame = CreateFrame("Frame", "OpenRollsNameFrame", UIParent)
     frame:SetBackdrop({
@@ -100,8 +100,14 @@ end
 
 local NamesFrame = NamesFrame or CreateNameFrame()
 
+--The OpenRolls copy of the summary frame...I'm only going to keep one, but its possible for
+--  multiple versions to be created independantly
 local SummaryFrame
+
+--The item/quantity currently being rolled for, if any
 local currentItem, currentQuantity
+
+--The timer for the current roll, if any
 local timer
 
 function OpenRolls:GetDisenchanter()
@@ -112,6 +118,9 @@ function OpenRolls:GetBanker()
     return NamesFrame.bankName:GetText()
 end
 
+--helper function that initializes a saved variable if needed
+--  var is the name of the variable [as a string]
+--  initial is the initial value [as an actual value]
 local function Init(var, initial)
     if OpenRollsData[var] == nil then
         OpenRollsData[var] = initial
@@ -131,11 +140,19 @@ function OpenRolls:InitializeSavedVariables()
     Init("RollMax", 100)
 end
 
+--a table of who has already rolled
+--  index is the character's name
+--  value is the character's roll
 local rolls = {}
 local function HasRolled(char)
     return rolls[char] ~= nil and rolls[char] > 0
 end
 
+--Modifies a character's roll, and ends the roll if neccessary
+--  msg == 'roll' a roll is assigned
+--  msg == 'pass' a roll is removed
+--  msg == 'clear' a roll is reset
+--  roll is only used when assigning a roll [msg=='roll']
 local function AssignRoll(char, msg, roll)
     if msg == "roll" then
         rolls[char] = roll
@@ -152,14 +169,20 @@ local function AssignRoll(char, msg, roll)
     OpenRolls:EndRoll(currentItem, currentQuantity)
 end
 
+--Equivilent to AssignRoll(char, 'clear')
+--  Why is there a msg parameter?
 local function ClearRoll(msg, char)
     rolls[char] = 0
 end
 
+--Equivilent to AssignRoll(char, 'pass')
+--  See ClearRoll()
 local function PassRoll(msg, char)
     rolls[char] = -1
 end
 
+
+--Prints people who have not yet rolled, if neccessary
 local function Warning()
     if not OpenRollsData.Warning then return end
 
@@ -179,11 +202,17 @@ function OpenRolls:OnInitialize()
     SummaryFrame = OpenRolls:CreateSummaryFrame("OpenRollsSummaryFrame", AssignRoll)
 end
 
+--Ensures changes made to the name frames get saved
+--  This could probably be put in the LOOT_CLOSED event, but I didn't
 function OpenRolls:PLAYER_LEAVING_WORLD()
     OpenRollsData.Disenchanter = NamesFrame.chantName:GetText()
     OpenRollsData.Banker = NamesFrame.bankName:GetText()
 end
 
+
+--Sort the rolls table and prints the top rollers, one per item being rolled for
+--  If there's a tie in the last position, prints additional names as appropriate
+--  Actually rolling off this tie is up to the user
 function OpenRolls:PrintWinners(item, quantity)
     OpenRolls:Communicate("Roll over for " .. quantity .. "x" .. item)
     local winners = mysort(rolls, function(i,j) return i.value < j.value end)
@@ -204,7 +233,9 @@ function OpenRolls:PrintWinners(item, quantity)
     end
 end
 
+--Begins an actual roll
 function OpenRolls:Roll(item, quantity)
+    --we only want one roll at a time
     if timer ~= nil then
         OpenRolls:Print("A roll is already in progress; please wait until it is finished before starting a new roll.")
         return
@@ -234,6 +265,7 @@ function OpenRolls:Roll(item, quantity)
                                     OpenRolls:UnregisterMessage("RollTrack_Roll")
                                   end})
     
+    --RollTrack_Roll is the message that is thrown when somebody rolls
     OpenRolls:RegisterMessage("RollTrack_Roll", function(msg, char, roll, min, max)
         if min ~= OpenRollsData.RollMin or max ~= OpenRollsData.RollMax then
             SendChatMessage("You rolled with a non-standard range [" 
@@ -245,12 +277,22 @@ function OpenRolls:Roll(item, quantity)
             SendChatMessage("You have already rolled once for this item.", "WHISPER", nil, char)
             return
         end
+
         AssignRoll(char, "roll", roll)
         SummaryFrame:AssignRoll(char, "roll", roll)
     end)
 end
 
+--In their infinite wisdom, Blizzard decided that loot should be assigned via a random value
+--  that apparently gets reassigned at their whim
+--This bypasses this, allowing you to distribute to a specific person
+--Optionally, it provides you with a confirmation box
+--window is the loot window that asked for the distribution; it provides the item's slot
+--followup is used to inform intrested third party addons about the distribution; what it
+--  does is determained by the source of the distribution [the banker button does something
+--  different from the Asisgn button, for instance]
 function OpenRolls:DistributeItemByName(player, window, followup)
+    if followup == nil then followup = function(window, player) end end
     local slot = window.slot
     local item = GetLootSlotLink(slot)
     for i = 1, 40 do
@@ -270,6 +312,7 @@ function OpenRolls:DistributeItemByName(player, window, followup)
     return false
 end
 
+--Finishes the roll, printing winners, et cetera
 function OpenRolls:EndRoll(item, quantity)
     OpenRolls:UnregisterMessage("RollTrack_Roll")
     for c, r in pairs(rolls) do
@@ -288,6 +331,7 @@ function OpenRolls:EndRoll(item, quantity)
     currentQuantity = nil
 end
 
+--The function that gets called when somebody types /openroll
 local function CommandLine(str)
     local found, _, item, quantity = str:find("^(" .. ItemLinkPattern ..")%s*(%d*)$")
     if found then
@@ -308,11 +352,12 @@ local function CommandLine(str)
     
     OpenRolls:Print("BAD [[" .. str .. "]]")
 end
-
 OpenRolls:RegisterChatCommand("openroll", CommandLine)
 
+--All the currently active loot windows; what a descriptive name
 local lewt = {}
 
+--This shifts loot windows up when one closes
 local function RepositionLootWindows()
     if #lewt == 0 then return end
     lewt[1]:ClearAllPoints()
@@ -327,6 +372,12 @@ end
 --Support for Summary Hooks
 --Third party addons call AddSummaryHook in order to get extra information added to the
 --  mouseover text for characters in the summary frame
+--single determains if we are adding a single line or a double line
+--  true -- http://www.wowwiki.com/API_GameTooltip_AddLine
+--  false -- http://www.wowwiki.com/API_GameTooltip_AddDoubleLine
+--func is called as func(name, roll)
+--  The return values are passed directly to one of the above functions, as determined
+--  by the value of single
 function OpenRolls:AddSummaryHook(name, single, func)
     SummaryFrame:AddHook(name, single, func)
 end
@@ -335,8 +386,23 @@ function OpenRolls:RemoveSummaryHook(name)
     SummaryFrame:RemoveHook(name)
 end
 
+
+--This is the list of addons that have added to the default loot window
 local AttachedLootWindows = {}
 
+--Registers an addition to the default loot window
+--addon must be a table with a function called CreateLootWindow that takes two parameters
+--  the loot slot the window corresponds to and the base loot window
+--The return value is the actual frame; its size needs to be absolute, since it gets all 
+--  anchor points cleared and reassigned appropriately
+--The frame will get two additional functions added to it: SetAssign(char) and GetAssign()
+--  These are used so the addon can manipulate OpenRolls assignment window as needed
+--There are three optional functions that can be part of this frame
+--  AwardToBanker and AwardToDisenchanter are called when the Banker and Disenchanter buttons
+--    are clicked, respectively
+--  AwardToPlayer is called when the Award button is clicked
+--  If the addon doesn't care about these situations, simply don't add those functions
+--  At present, the addon is not informed if an item is distributed via a random roll
 function OpenRolls:RegisterLootWindow(addon)
     table.insert(AttachedLootWindows, addon)
 end
@@ -347,6 +413,7 @@ function OpenRolls:UnregisterLootWindow(addon)
     end
 end
 
+--Create/destroy the loot windows if neccessary
 function OpenRolls:LOOT_OPENED()
     if OpenRollsData.ShowLootWindows == 'never' then return end
     if OpenRollsData.ShowLootWindows == 'whenML' and (select(2, GetLootMethod())) ~= 0 then return end
@@ -374,6 +441,7 @@ function OpenRolls:LOOT_CLOSED()
     end
 end
 
+--Destroy one loot window when the item is distributed
 function OpenRolls:LOOT_SLOT_CLEARED(event, slot)
     local pos = nil
     for i, frame in pairs(lewt) do
