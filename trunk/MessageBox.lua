@@ -1,3 +1,7 @@
+--Creates a message box with "Confirm" and "Cancel" buttons
+--  yes is the function that gets called if "Confirm" is pressed
+--  no is the function that gets called if "Cancel" is pressed
+
 local count = 0
 function OpenRolls:CreateMessageBox(text, yes, no)
     local box = CreateFrame("Frame", "OpenRollsMessageBox" .. count, UIParent)
