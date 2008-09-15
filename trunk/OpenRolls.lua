@@ -14,6 +14,14 @@ local table = table
 local pairs = pairs
 
 --Sorts a table according to value instead of by key; comp is the comparison function
+--  This is a really weird sort.  The parameters to comp are two key-value pairs.  Example:
+--  Table - {a = 9, c = 5, b = 6}
+--  comp(left, right) might be left = {key = a, value = 9}; right = {key = c, value = 5}
+--  The return value is an array of these key-value pairs
+--  If comp sorts by value, the returned array would be 
+--    {1 = {key = c, value = 5}, 
+--     2 = {key = b, value = 6},
+--     3 = {key = a, value = 9}}
 local function mysort(tbl, comp)
     local newtbl = {}
     local k = 1
@@ -262,7 +270,7 @@ function OpenRolls:Roll(item, quantity)
                                  {initial = Warning,
                                   count = function() 
                                     SummaryFrame:EndRoll(item, quantity)
-                                    OpenRolls:UnregisterMessage("RollTrack_Roll")
+                                    OpenRolls:EndRoll(item, quantity)
                                   end})
     
     --RollTrack_Roll is the message that is thrown when somebody rolls
@@ -413,6 +421,9 @@ function OpenRolls:UnregisterLootWindow(addon)
     end
 end
 
+--The number of loot windows we've created...I need unique names
+local framecount = 0
+
 --Create/destroy the loot windows if neccessary
 function OpenRolls:LOOT_OPENED()
     if OpenRollsData.ShowLootWindows == 'never' then return end
@@ -423,7 +434,8 @@ function OpenRolls:LOOT_OPENED()
     local threshold = GetLootThreshold()
     for i = 1, GetNumLootItems() do
         if (select(4, GetLootSlotInfo(i))) >= threshold then
-            local item = OpenRolls:CreateLootWindow("OpenRollsLootWindow" .. i, UIParent, i)
+            local item = OpenRolls:CreateLootWindow("OpenRollsLootWindow" .. framecount, UIParent, i)
+            framecount = framecount + 1
             for _, j in pairs(AttachedLootWindows) do
                 item:AttachLootWindow(j)
             end

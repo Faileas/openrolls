@@ -194,7 +194,7 @@ do
         assignName:SetPoint("TOPRIGHT", open, "BOTTOMRIGHT")--, -5, 0)
         assignName:SetHeight(20)
         AttachMouseoverText(assignName, "User to award item to", 1, 1, 1, 1)
-        
+
         local assign = CreateFrame("button", framename .. "Assign", self, "UIPanelButtonTemplate")
         assign:SetPoint("TOPLEFT", assignName, "TOPRIGHT")
         assign:SetPoint("TOPRIGHT", raid, "TOPRIGHT")
