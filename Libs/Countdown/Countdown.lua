@@ -71,11 +71,13 @@ function Countdown.BeginCountdown(self, durations, display, callbacks)
         Callback(self, callbacks.final)
     end
     
-    local function tick()
+    local function tick(printzero)
         local myIDs = ActiveIDs[self]
         if not myIDs[id] then return end
     
-        Callback(self, display, durations.count)
+        if durations.count > 0 or printzero ~= false then
+            Callback(self, display, durations.count)
+        end
     
         if durations.count == 0 then
             Callback(self, callbacks.count)
@@ -90,7 +92,7 @@ function Countdown.BeginCountdown(self, durations, display, callbacks)
         local myIDs = ActiveIDs[self]
         if not myIDs[id] then return end
         Callback(self, callbacks.initial, id)
-        tick()
+        tick(false)
     end
     
     Timer:ScheduleTimer(init, durations.initial)
