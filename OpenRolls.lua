@@ -146,7 +146,7 @@ function OpenRolls:InitializeSavedVariables()
     Init("CountdownTime", 5)
     Init("RollMin", 1)
     Init("RollMax", 100)
-    Init("LootFramesOffset", {horizontal = 0, vertical = 0})
+     Init("LootFramesOffset", {horizontal = 189, vertical = -116})
 end
 
 --a table of who has already rolled
@@ -203,13 +203,7 @@ local function Warning()
     end
 end
 
-function OpenRolls:OnInitialize()
-    OpenRolls:ScheduleTimer(function()
-        OpenRolls:InitializeSavedVariables()
-        NamesFrame.bankName:SetText(OpenRollsData.Banker)
-        NamesFrame.chantName:SetText(OpenRollsData.Disenchanter)
-        end, 1)
-    
+function OpenRolls:OnInitialize()    
     SummaryFrame = OpenRolls:CreateSummaryFrame("OpenRollsSummaryFrame", AssignRoll)
 
     local anchor = CreateFrame("frame", "OpenRollsAnchor", UIParent)
@@ -225,9 +219,19 @@ function OpenRolls:OnInitialize()
     anchor:SetFrameStrata("FULLSCREEN_DIALOG")        
     anchor:SetWidth(278)
     anchor:SetHeight(100)
-    anchor:SetPoint("TOP", NamesFrame.frame, "TOP", 0, OpenRollsData.LootFramesOffset.vertical)
-    anchor:SetPoint("LEFT", LootFrame, "RIGHT", OpenRollsData.LootFramesOffset.horizontal, 0)
-    anchor:Hide()
+    anchor:EnableMouse()
+    anchor:SetScript("OnMouseDown", function(frame) frame:StartMoving() end)
+    anchor:SetScript("OnMouseUp", function(frame) frame:StopMovingOrSizing() end)
+    --anchor:Hide()
+    
+    OpenRolls:ScheduleTimer(function()
+        OpenRolls:InitializeSavedVariables()
+        local Data = OpenRollsData
+        NamesFrame.bankName:SetText(Data.Banker)
+        NamesFrame.chantName:SetText(Data.Disenchanter)
+        anchor:SetPoint("TOPLEFT", UIParent, "TOPLEFT", Data.LootFramesOffset.horizontal, Data.LootFramesOffset.vertical)
+        end, 1)
+    
     OpenRolls.anchor = anchor
 end
 
@@ -390,8 +394,7 @@ local lewt = {}
 local function RepositionLootWindows()
     if #lewt == 0 then return end
     lewt[1]:ClearAllPoints()
-    lewt[1]:SetPoint("LEFT", LootFrame, "RIGHT", -66, 0)
-    lewt[1]:SetPoint("TOP", NamesFrame.frame, "BOTTOM", -4, 0)
+    lewt[1]:SetPoint("TOPLEFT", OpenRolls.anchor, "TOPLEFT")
     for i = 2, #lewt do
         lewt[i]:ClearAllPoints()
         lewt[i]:SetPoint("TOPLEFT", lewt[i-1], "BOTTOMLEFT")
