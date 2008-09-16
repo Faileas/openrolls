@@ -146,7 +146,8 @@ function OpenRolls:InitializeSavedVariables()
     Init("CountdownTime", 5)
     Init("RollMin", 1)
     Init("RollMax", 100)
-     Init("LootFramesOffset", {horizontal = 189, vertical = -116})
+    Init("LootFramesOffset", {horizontal = 189, vertical = -116})
+    Init("LootFramesAnchor", "TOPLEFT")
 end
 
 --a table of who has already rolled
@@ -220,6 +221,7 @@ function OpenRolls:OnInitialize()
     anchor:SetWidth(278)
     anchor:SetHeight(100)
     anchor:EnableMouse()
+    anchor:SetMovable(true)
     anchor:SetScript("OnMouseDown", function(frame) frame:StartMoving() end)
     anchor:SetScript("OnMouseUp", function(frame) frame:StopMovingOrSizing() end)
     --anchor:Hide()
@@ -229,17 +231,20 @@ function OpenRolls:OnInitialize()
         local Data = OpenRollsData
         NamesFrame.bankName:SetText(Data.Banker)
         NamesFrame.chantName:SetText(Data.Disenchanter)
-        anchor:SetPoint("TOPLEFT", UIParent, "TOPLEFT", Data.LootFramesOffset.horizontal, Data.LootFramesOffset.vertical)
+        anchor:SetPoint(Data.LootFramesAnchor, UIParent, Data.LootFramesAnchor, Data.LootFramesOffset.horizontal, Data.LootFramesOffset.vertical)
         end, 1)
     
     OpenRolls.anchor = anchor
 end
 
---Ensures changes made to the name frames get saved
---  This could probably be put in the LOOT_CLOSED event, but I didn't
+--Ensures changes get saved
 function OpenRolls:PLAYER_LEAVING_WORLD()
-    OpenRollsData.Disenchanter = NamesFrame.chantName:GetText()
-    OpenRollsData.Banker = NamesFrame.bankName:GetText()
+    local Data = OpenRollsData
+    Data.Disenchanter = NamesFrame.chantName:GetText()
+    Data.Banker = NamesFrame.bankName:GetText()
+    local anchor,x,y = select(3, OpenRolls.anchor:GetPoint(1))
+    Data.LootFramesAnchor = anchor
+    Data.LootFramesOffset = {horizontal = math.floor(x), vertical = math.floor(y)}    
 end
 
 
