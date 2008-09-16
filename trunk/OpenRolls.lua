@@ -224,7 +224,7 @@ function OpenRolls:OnInitialize()
     anchor:SetMovable(true)
     anchor:SetScript("OnMouseDown", function(frame) frame:StartMoving() end)
     anchor:SetScript("OnMouseUp", function(frame) frame:StopMovingOrSizing() end)
-    --anchor:Hide()
+    anchor:Hide()
     
     OpenRolls:ScheduleTimer(function()
         OpenRolls:InitializeSavedVariables()

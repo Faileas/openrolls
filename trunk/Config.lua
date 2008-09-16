@@ -140,7 +140,16 @@ do
     ShowAnchorButton:SetHeight(20)
     ShowAnchorButton:SetWidth(100)
     ShowAnchorButton:SetText("Show Anchor")
-    ShowAnchorButton:SetScript("OnClick", function(frame, ...) OpenRolls:Print("Not Implemented") end)
+    ShowAnchorButton:SetScript("OnClick", function(frame, ...) 
+        local anchor = OpenRolls.anchor
+        if anchor:IsShown() then
+            anchor:Hide()
+            frame:SetText("Show Anchor")
+        else
+            anchor:Show()
+            frame:SetText("Hide Anchor")
+        end
+    end)
     
     ConfigPanel:SetScript("OnShow", function(self, ...)
         local Data = OpenRollsData
@@ -150,6 +159,10 @@ do
         WarningBox:SetChecked(Data.Warning)
         MainDuration:SetText(Data.SilentTime)
         SubDuration:SetText(Data.CountdownTime)
+
+        local anchor,x,y = select(3, OpenRolls.anchor:GetPoint(1))
+        Data.LootFramesAnchor = anchor
+        Data.LootFramesOffset = {horizontal = math.floor(x), vertical = math.floor(y)} 
     end)
     
     ConfigPanel.name = "Open Rolls"
@@ -161,6 +174,16 @@ do
         Data.Warning = not not WarningBox:GetChecked()
         Data.SilentTime = tonumber(MainDuration:GetText())
         Data.CountdownTime = tonumber(SubDuration:GetText())
+
+        local anchor,x,y = select(3, OpenRolls.anchor:GetPoint(1))
+        Data.LootFramesAnchor = anchor
+        Data.LootFramesOffset = {horizontal = math.floor(x), vertical = math.floor(y)}   
+    end
+    
+    ConfigPanel.cancel = function()
+        local Data = OpenRollsData
+        OpenRolls.anchor:ClearAllPoints()
+        OpenRolls.anchor:SetPoint(Data.LootFramesAnchor, UIParent, Data.LootFramesAnchor, Data.LootFramesOffset.horizontal, Data.LootFramesOffset.vertical)
     end
     InterfaceOptions_AddCategory(ConfigPanel)
 end
