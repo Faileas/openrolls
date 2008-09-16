@@ -146,6 +146,7 @@ function OpenRolls:InitializeSavedVariables()
     Init("CountdownTime", 5)
     Init("RollMin", 1)
     Init("RollMax", 100)
+    Init("LootFramesOffset", {horizontal = 0, vertical = 0})
 end
 
 --a table of who has already rolled
@@ -203,11 +204,31 @@ local function Warning()
 end
 
 function OpenRolls:OnInitialize()
-    OpenRolls:InitializeSavedVariables()
-    NamesFrame.bankName:SetText(OpenRollsData.Banker)
-    NamesFrame.chantName:SetText(OpenRollsData.Disenchanter)
+    OpenRolls:ScheduleTimer(function()
+        OpenRolls:InitializeSavedVariables()
+        NamesFrame.bankName:SetText(OpenRollsData.Banker)
+        NamesFrame.chantName:SetText(OpenRollsData.Disenchanter)
+        end, 1)
     
     SummaryFrame = OpenRolls:CreateSummaryFrame("OpenRollsSummaryFrame", AssignRoll)
+
+    local anchor = CreateFrame("frame", "OpenRollsAnchor", UIParent)
+    
+    anchor:SetBackdrop({
+        bgFile="Interface\\DialogFrame\\UI-DialogBox-Background",
+        edgeFile="Interface\\DialogFrame\\UI-DialogBox-Border", 
+        tile = true, tileSize = 32, edgeSize = 32, 
+        insets = { left = 8, right = 8, top = 8, bottom = 8 }
+    }  )
+    anchor:SetBackdropColor(0,0,0,1)
+    anchor:SetToplevel(true)
+    anchor:SetFrameStrata("FULLSCREEN_DIALOG")        
+    anchor:SetWidth(278)
+    anchor:SetHeight(100)
+    anchor:SetPoint("TOP", NamesFrame.frame, "TOP", 0, OpenRollsData.LootFramesOffset.vertical)
+    anchor:SetPoint("LEFT", LootFrame, "RIGHT", OpenRollsData.LootFramesOffset.horizontal, 0)
+    anchor:Hide()
+    OpenRolls.anchor = anchor
 end
 
 --Ensures changes made to the name frames get saved

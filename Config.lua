@@ -135,6 +135,13 @@ do
     SubDurationString:SetPoint("LEFT", SubDuration, "RIGHT")
     SubDurationString:SetText("Length of spammed countdown")
     
+    local ShowAnchorButton = CreateFrame("button", "OpenRollsConfigShowAnchor", ConfigPanel, "UIPanelButtonTemplate")
+    ShowAnchorButton:SetPoint("TOPLEFT", SubDuration, "BOTTOMLEFT", -5, -10)
+    ShowAnchorButton:SetHeight(20)
+    ShowAnchorButton:SetWidth(100)
+    ShowAnchorButton:SetText("Show Anchor")
+    ShowAnchorButton:SetScript("OnClick", function(frame, ...) OpenRolls:Print("Not Implemented") end)
+    
     ConfigPanel:SetScript("OnShow", function(self, ...)
         local Data = OpenRollsData
         WhenShowBox:Click(Data.ShowLootWindows)
