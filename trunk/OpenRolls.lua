@@ -148,6 +148,8 @@ function OpenRolls:InitializeSavedVariables()
     Init("RollMax", 100)
     Init("LootFramesOffset", {horizontal = 189, vertical = -116})
     Init("LootFramesAnchor", "TOPLEFT")
+    Init("NameFramesOffset", {horizontal = 189, vertical = -116})
+    Init("NameFramesAnchor", "TOPLEFT")
 end
 
 --a table of who has already rolled
@@ -204,37 +206,75 @@ local function Warning()
     end
 end
 
-function OpenRolls:OnInitialize()    
-    SummaryFrame = OpenRolls:CreateSummaryFrame("OpenRollsSummaryFrame", AssignRoll)
-
+local function CreateAnchors()
     local anchor = CreateFrame("frame", "OpenRollsAnchor", UIParent)
     
     anchor:SetBackdrop({
-        bgFile="Interface\\DialogFrame\\UI-DialogBox-Background",
-        edgeFile="Interface\\DialogFrame\\UI-DialogBox-Border", 
+        bgFile="Interface/Tooltips/UI-Tooltip-Background",--"Interface\\DialogFrame\\UI-DialogBox-Background",
+        edgeFile=nil, 
         tile = true, tileSize = 32, edgeSize = 32, 
         insets = { left = 8, right = 8, top = 8, bottom = 8 }
     }  )
-    anchor:SetBackdropColor(0,0,0,1)
+    anchor:SetBackdropColor(1,0,0,1)
     anchor:SetToplevel(true)
     anchor:SetFrameStrata("FULLSCREEN_DIALOG")        
-    anchor:SetWidth(278)
-    anchor:SetHeight(100)
+    anchor:SetWidth(178)
+    anchor:SetHeight(50)
     anchor:EnableMouse()
     anchor:SetMovable(true)
     anchor:SetScript("OnMouseDown", function(frame) frame:StartMoving() end)
     anchor:SetScript("OnMouseUp", function(frame) frame:StopMovingOrSizing() end)
-    anchor:Hide()
     
+    local anchorString = 
+        anchor:CreateFontString("OpenRollsAnchorString", "OVERLAY", "GameFontNormal")
+    anchorString:SetPoint("CENTER", anchor, "CENTER")
+    anchorString:SetText("Loot Window Anchor")
+    
+    OpenRolls.anchor = anchor
+    
+    anchor = CreateFrame("frame", "OpenRollsNameAnchor", UIParent)
+    
+    anchor:SetBackdrop({
+        bgFile="Interface/Tooltips/UI-Tooltip-Background",--"Interface\\DialogFrame\\UI-DialogBox-Background",
+        edgeFile=nil, 
+        tile = true, tileSize = 32, edgeSize = 32, 
+        insets = { left = 8, right = 8, top = 8, bottom = 8 }
+    }  )
+    anchor:SetBackdropColor(1,0,0,1)
+    anchor:SetToplevel(true)
+    anchor:SetFrameStrata("FULLSCREEN_DIALOG")        
+    anchor:SetWidth(178)
+    anchor:SetHeight(50)
+    anchor:EnableMouse()
+    anchor:SetMovable(true)
+    anchor:SetScript("OnMouseDown", function(frame) frame:StartMoving() end)
+    anchor:SetScript("OnMouseUp", function(frame) frame:StopMovingOrSizing() end)
+    
+    anchorString = 
+        anchor:CreateFontString("OpenRollsNameAnchorString", "OVERLAY", "GameFontNormal")
+    anchorString:SetPoint("CENTER", anchor, "CENTER")
+    anchorString:SetText("Name Frame Anchor")
+    
+    OpenRolls.namesAnchor = anchor
+    --anchor:Hide()
+end
+
+function OpenRolls:OnInitialize()    
+    SummaryFrame = OpenRolls:CreateSummaryFrame("OpenRollsSummaryFrame", AssignRoll)
+    
+    CreateAnchors()
+    
+    NamesFrame.bankName:ClearAllPoints()
+    NamesFrame.bankName:SetPoint("TOPLEFT", OpenRolls.namesAnchor, "TOPLEFT", 19, -26)
     OpenRolls:ScheduleTimer(function()
         OpenRolls:InitializeSavedVariables()
         local Data = OpenRollsData
         NamesFrame.bankName:SetText(Data.Banker)
         NamesFrame.chantName:SetText(Data.Disenchanter)
-        anchor:SetPoint(Data.LootFramesAnchor, UIParent, Data.LootFramesAnchor, Data.LootFramesOffset.horizontal, Data.LootFramesOffset.vertical)
+        OpenRolls.anchor:SetPoint(Data.LootFramesAnchor, UIParent, Data.LootFramesAnchor, Data.LootFramesOffset.horizontal, Data.LootFramesOffset.vertical)
+        OpenRolls.namesAnchor:SetPoint(Data.NameFramesAnchor, UIParent, Data.NameFramesAnchor, Data.NameFramesOffset.horizontal, Data.NameFramesOffset.vertical)
         end, 1)
     
-    OpenRolls.anchor = anchor
 end
 
 --Ensures changes get saved
@@ -244,7 +284,11 @@ function OpenRolls:PLAYER_LEAVING_WORLD()
     Data.Banker = NamesFrame.bankName:GetText()
     local anchor,x,y = select(3, OpenRolls.anchor:GetPoint(1))
     Data.LootFramesAnchor = anchor
-    Data.LootFramesOffset = {horizontal = math.floor(x), vertical = math.floor(y)}    
+    Data.LootFramesOffset = {horizontal = math.floor(x), vertical = math.floor(y)}
+
+    anchor,x,y = select(3, OpenRolls.namesAnchor:GetPoint(1))
+    Data.NameFramesAnchor = anchor
+    Data.NameFramesOffset = {horizontal = math.floor(x), vertical = math.floor(y)}    
 end
 
 
