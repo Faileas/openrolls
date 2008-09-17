@@ -138,18 +138,17 @@ do
     local ShowAnchorButton = CreateFrame("button", "OpenRollsConfigShowAnchor", ConfigPanel, "UIPanelButtonTemplate")
     ShowAnchorButton:SetPoint("TOPLEFT", SubDuration, "BOTTOMLEFT", -5, -10)
     ShowAnchorButton:SetHeight(20)
-    ShowAnchorButton:SetWidth(100)
-    ShowAnchorButton:SetText("Show Anchor")
+    ShowAnchorButton:SetWidth(120)
+    ShowAnchorButton:SetText("Toggle Anchors")
     ShowAnchorButton:SetScript("OnClick", function(frame, ...) 
         local anchor = OpenRolls.anchor
-        if anchor:IsShown() then
+        local namesAnchor = OpenRolls.namesAnchor
+        if anchor:IsShown() and namesAnchor:IsShown() then
             anchor:Hide()
-            OpenRolls.namesAnchor:Hide()
-            frame:SetText("Show Anchor")
+            namesAnchor:Hide()
         else
             anchor:Show()
-            OpenRolls.namesAnchor:Show()
-            frame:SetText("Hide Anchor")
+            namesAnchor:Show()
         end
     end)
     
@@ -196,5 +195,6 @@ do
         OpenRolls.namesAnchor:ClearAllPoints()
         OpenRolls.namesAnchor:SetPoint(Data.NameFramesAnchor, UIParent, Data.NameFramesAnchor, Data.NameFramesOffset.horizontal, Data.NameFramesOffset.vertical)
     end
+    
     InterfaceOptions_AddCategory(ConfigPanel)
 end
