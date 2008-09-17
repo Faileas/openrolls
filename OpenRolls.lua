@@ -207,7 +207,7 @@ local function Warning()
 end
 
 local function CreateAnchors()
-    local anchor = CreateFrame("frame", "OpenRollsAnchor", UIParent)
+    local anchor = CreateFrame("button", "OpenRollsAnchor", UIParent)
     
     anchor:SetBackdrop({
         bgFile="Interface/Tooltips/UI-Tooltip-Background",--"Interface\\DialogFrame\\UI-DialogBox-Background",
@@ -222,8 +222,26 @@ local function CreateAnchors()
     anchor:SetHeight(50)
     anchor:EnableMouse()
     anchor:SetMovable(true)
-    anchor:SetScript("OnMouseDown", function(frame) frame:StartMoving() end)
-    anchor:SetScript("OnMouseUp", function(frame) frame:StopMovingOrSizing() end)
+    anchor:SetScript("OnMouseDown", function(frame, button) 
+        if button == "LeftButton" then
+            frame:StartMoving() 
+            frame.isMoving = true
+        end
+    end)
+    anchor:SetScript("OnMouseUp", function(frame, button) 
+        if button == "LeftButton" and frame.isMoving then
+            frame:StopMovingOrSizing() 
+            frame.isMoving = false
+        end
+    end)
+    anchor:RegisterForClicks("RightButtonUp")
+    anchor:SetScript("OnClick", function(frame) frame:Hide() end)
+    anchor:SetScript("OnHide", function(frame) 
+        if frame.isMoving then 
+            frame:StopMovingOrSizing() 
+            frame.isMoving = false
+        end 
+    end)
     
     local anchorString = 
         anchor:CreateFontString("OpenRollsAnchorString", "OVERLAY", "GameFontNormal")
@@ -233,7 +251,7 @@ local function CreateAnchors()
     OpenRolls.anchor = anchor
     anchor:Hide()
     
-    anchor = CreateFrame("frame", "OpenRollsNameAnchor", UIParent)
+    anchor = CreateFrame("button", "OpenRollsNameAnchor", UIParent)
     
     anchor:SetBackdrop({
         bgFile="Interface/Tooltips/UI-Tooltip-Background",--"Interface\\DialogFrame\\UI-DialogBox-Background",
@@ -248,8 +266,26 @@ local function CreateAnchors()
     anchor:SetHeight(50)
     anchor:EnableMouse()
     anchor:SetMovable(true)
-    anchor:SetScript("OnMouseDown", function(frame) frame:StartMoving() end)
-    anchor:SetScript("OnMouseUp", function(frame) frame:StopMovingOrSizing() end)
+    anchor:SetScript("OnMouseDown", function(frame, button) 
+        if button == "LeftButton" then
+            frame:StartMoving() 
+            frame.isMoving = true
+        end
+    end)
+    anchor:SetScript("OnMouseUp", function(frame, button) 
+        if button == "LeftButton" and frame.isMoving then
+            frame:StopMovingOrSizing() 
+            frame.isMoving = false
+        end
+    end)
+    anchor:RegisterForClicks("RightButtonUp")
+    anchor:SetScript("OnClick", function(frame) frame:Hide() end)
+    anchor:SetScript("OnHide", function(frame) 
+        if frame.isMoving then 
+            frame:StopMovingOrSizing() 
+            frame.isMoving = false
+        end 
+    end)
     
     anchorString = 
         anchor:CreateFontString("OpenRollsNameAnchorString", "OVERLAY", "GameFontNormal")
