@@ -138,7 +138,7 @@ do
     local ShowAnchorButton = CreateFrame("button", "OpenRollsConfigShowAnchor", ConfigPanel, "UIPanelButtonTemplate")
     ShowAnchorButton:SetPoint("TOPLEFT", SubDuration, "BOTTOMLEFT", -5, -10)
     ShowAnchorButton:SetHeight(20)
-    ShowAnchorButton:SetWidth(120)
+    ShowAnchorButton:SetWidth(150)
     ShowAnchorButton:SetText("Toggle Anchors")
     ShowAnchorButton:SetScript("OnClick", function(frame, ...) 
         local anchor = OpenRolls.anchor
@@ -150,6 +150,18 @@ do
             anchor:Show()
             namesAnchor:Show()
         end
+    end)
+    
+    local ResetAnchorButton = CreateFrame("button", "OpenRollsConfigResetAnchor", ConfigPanel, "UIPanelButtonTemplate")
+    ResetAnchorButton:SetPoint("TOPLEFT", ShowAnchorButton, "TOPRIGHT", 0, 0)
+    ResetAnchorButton:SetHeight(20)
+    ResetAnchorButton:SetWidth(150)
+    ResetAnchorButton:SetText("Reset Anchors")
+    ResetAnchorButton:SetScript("OnClick", function(frame, ...) 
+        OpenRolls.anchor:ClearAllPoints()
+        OpenRolls.anchor:SetPoint("TOPLEFT", UIParent, "TOPLEFT", 189, -116)
+        OpenRolls.namesAnchor:ClearAllPoints()
+        OpenRolls.namesAnchor:SetPoint("TOPLEFT", UIParent, "TOPLEFT", 56, -64)
     end)
     
     ConfigPanel:SetScript("OnShow", function(self, ...)
