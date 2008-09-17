@@ -231,6 +231,7 @@ local function CreateAnchors()
     anchorString:SetText("Loot Window Anchor")
     
     OpenRolls.anchor = anchor
+    anchor:Hide()
     
     anchor = CreateFrame("frame", "OpenRollsNameAnchor", UIParent)
     
@@ -256,7 +257,7 @@ local function CreateAnchors()
     anchorString:SetText("Name Frame Anchor")
     
     OpenRolls.namesAnchor = anchor
-    --anchor:Hide()
+    anchor:Hide()
 end
 
 function OpenRolls:OnInitialize()    
