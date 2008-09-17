@@ -404,7 +404,7 @@ function OpenRolls:EndRoll(item, quantity)
     
     OpenRolls:PrintWinners(item, quantity)
     if OpenRollsData.ShowSummaryWhenRollsOver then
-        OpenRolls:ShowSummary()
+        SummaryFrame:ShowSummary()
     end
     
     OpenRolls:CancelCountdown(timer)
