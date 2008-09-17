@@ -148,7 +148,7 @@ function OpenRolls:InitializeSavedVariables()
     Init("RollMax", 100)
     Init("LootFramesOffset", {horizontal = 189, vertical = -116})
     Init("LootFramesAnchor", "TOPLEFT")
-    Init("NameFramesOffset", {horizontal = 189, vertical = -116})
+    Init("NameFramesOffset", {horizontal = 56, vertical = -64})
     Init("NameFramesAnchor", "TOPLEFT")
 end
 
