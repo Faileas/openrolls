@@ -144,9 +144,11 @@ do
         local anchor = OpenRolls.anchor
         if anchor:IsShown() then
             anchor:Hide()
+            OpenRolls.namesAnchor:Hide()
             frame:SetText("Show Anchor")
         else
             anchor:Show()
+            OpenRolls.namesAnchor:Show()
             frame:SetText("Hide Anchor")
         end
     end)
@@ -162,7 +164,11 @@ do
 
         local anchor,x,y = select(3, OpenRolls.anchor:GetPoint(1))
         Data.LootFramesAnchor = anchor
-        Data.LootFramesOffset = {horizontal = math.floor(x), vertical = math.floor(y)} 
+        Data.LootFramesOffset = {horizontal = math.floor(x), vertical = math.floor(y)}
+
+        anchor,x,y = select(3, OpenRolls.namesAnchor:GetPoint(1))
+        Data.NameFramesAnchor = anchor
+        Data.NameFramesOffset = {horizontal = math.floor(x), vertical = math.floor(y)}
     end)
     
     ConfigPanel.name = "Open Rolls"
@@ -178,12 +184,17 @@ do
         local anchor,x,y = select(3, OpenRolls.anchor:GetPoint(1))
         Data.LootFramesAnchor = anchor
         Data.LootFramesOffset = {horizontal = math.floor(x), vertical = math.floor(y)}   
+        anchor,x,y = select(3, OpenRolls.namesAnchor:GetPoint(1))
+        Data.NameFramesAnchor = anchor
+        Data.NameFramesOffset = {horizontal = math.floor(x), vertical = math.floor(y)}   
     end
     
     ConfigPanel.cancel = function()
         local Data = OpenRollsData
         OpenRolls.anchor:ClearAllPoints()
         OpenRolls.anchor:SetPoint(Data.LootFramesAnchor, UIParent, Data.LootFramesAnchor, Data.LootFramesOffset.horizontal, Data.LootFramesOffset.vertical)
+        OpenRolls.namesAnchor:ClearAllPoints()
+        OpenRolls.namesAnchor:SetPoint(Data.NameFramesAnchor, UIParent, Data.NameFramesAnchor, Data.NameFramesOffset.horizontal, Data.NameFramesOffset.vertical)
     end
     InterfaceOptions_AddCategory(ConfigPanel)
 end
