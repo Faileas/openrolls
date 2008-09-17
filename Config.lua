@@ -209,4 +209,8 @@ do
     end
     
     InterfaceOptions_AddCategory(ConfigPanel)
+    
+    function OpenRolls:ShowConfig()
+        InterfaceOptionsFrame_OpenToFrame(ConfigPanel)
+    end
 end

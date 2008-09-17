@@ -469,6 +469,11 @@ local function CommandLine(str)
         return
     end
     
+    if str:lower() == "config" then
+        OpenRolls:ShowConfig()
+        return
+    end
+    
     OpenRolls:Print("BAD [[" .. str .. "]]")
 end
 OpenRolls:RegisterChatCommand("openroll", CommandLine)
