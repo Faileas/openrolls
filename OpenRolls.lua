@@ -474,7 +474,12 @@ local function CommandLine(str)
         return
     end
     
-    OpenRolls:Print("BAD [[" .. str .. "]]")
+    OpenRolls:Print("Proper usage:")
+    OpenRolls:Print("     /openroll config -- Brings up options frame")
+    OpenRolls:Print("     /openroll [Item] -- Roll for one [Item]")
+    OpenRolls:Print("     /openroll [Quantity]x[Item] -- Roll for multiple [Item]s")
+    OpenRolls:Print("     /openroll -- Review last roll")
+    
 end
 OpenRolls:RegisterChatCommand("openroll", CommandLine)
 
