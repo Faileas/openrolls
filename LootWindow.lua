@@ -91,7 +91,7 @@ do
         icon:SetScript("OnEnter", function(frame, ...)
             local GameTooltip = GameTooltip
             GameTooltip:SetOwner(frame, "ANCHOR_TOPLEFT")
-            GameTooltip:SetHyperlink(GetLootSlotLink(lootslot))
+            GameTooltip:SetLootItem(lootslot)
             GameTooltip:Show()
         end)        
         
