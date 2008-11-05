@@ -10,4 +10,5 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/
 <Include file="Libs\RollTrack\RollTrack.xml"/>
 <Include file="Libs\Countdown\Countdown.xml"/>
 <Include file="Libs\GroupLib\GroupLib.xml"/>
+<Include file="Libs\dzjrGUI\dzjrGUI.xml"/>
 </Ui>
