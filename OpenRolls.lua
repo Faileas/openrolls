@@ -53,13 +53,16 @@ local function CreateNameFrame()
     frame:SetBackdropColor(0,0,0,1)
     frame:SetToplevel(true)
     frame:SetFrameStrata("FULLSCREEN_DIALOG")
+    frame:SetWidth(250)
+    frame:SetHeight(48)
+    frame:SetPoint("BOTTOMLEFT", LootFrame, "TOPLEFT", 61, -13)
 
     local BankName = CreateFrame("EditBox", "OpenRollsBankName", frame, "InputBoxTemplate")
     BankName:SetAutoFocus(false)
     BankName:SetFontObject(ChatFontNormal)
     BankName:SetTextInsets(0,0,3,3)
     BankName:SetMaxLetters(12)
-    BankName:SetPoint("BOTTOMLEFT", LootFrame, "TOPLEFT", 75, -4)
+    BankName:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", 13, 8)
     BankName:SetHeight(20)
     BankName:SetWidth(110)
     BankName:SetScript("OnEnter", function(frame, ...)
@@ -96,13 +99,17 @@ local function CreateNameFrame()
     ChantString:SetPoint("BOTTOMRIGHT", ChantName, "TOPRIGHT")
     ChantString:SetText("Disenchanter")
     
-    frame:SetPoint("TOPLEFT", BankString, "TOPLEFT", -13, 8)
-    frame:SetPoint("BOTTOMRIGHT", ChantName, "BOTTOMRIGHT", 8, -8)
+    local func = function(self, anchorFrom, anchor, anchorTo, x, y)
+        self.frame:ClearAllPoints()
+        self.frame:SetPoint(anchorFrom, anchor, anchorTo, x, y)
+    end
     
     frame:Hide()
+
     return {frame = frame, 
             bankString = BankString, bankName = BankName, 
-            chantString = ChantString, chantName = ChantName}
+            chantString = ChantString, chantName = ChantName,
+            SetPoint = func}
 end
 
 
@@ -133,9 +140,11 @@ local function Init(var, initial)
     if OpenRollsData[var] == nil then
         OpenRollsData[var] = initial
     end
+    OpenRolls.Defaults[var] = initial
 end
 
 function OpenRolls:InitializeSavedVariables()
+    OpenRolls.Defaults = {}
     Init("ShowSummaryWhenRollsOver", true)
     Init("ShowLootWindows", "whenML")
     Init("ConfirmBeforeLooting", true)
@@ -146,10 +155,14 @@ function OpenRolls:InitializeSavedVariables()
     Init("CountdownTime", 5)
     Init("RollMin", 1)
     Init("RollMax", 100)
-    Init("LootFramesOffset", {horizontal = 189, vertical = -116})
-    Init("LootFramesAnchor", "TOPLEFT")
-    Init("NameFramesOffset", {horizontal = 56, vertical = -64})
-    Init("NameFramesAnchor", "TOPLEFT")
+    Init("LootFramesOffset", {horizontal = -68, vertical = -10})
+    Init("LootFramesAnchor", "LootFrame")
+    Init("LootFramesAnchorFrom", "TOPLEFT")
+    Init("LootFramesAnchorTo", "TOPRIGHT")
+    Init("NameFramesOffset", {horizontal = 61, vertical = -13})
+    Init("NameFramesAnchor", "LootFrame")
+    Init("NameFramesAnchorFrom", "BOTTOMLEFT")
+    Init("NameFramesAnchorTo", "TOPLEFT")
 end
 
 --a table of who has already rolled
@@ -206,110 +219,21 @@ local function Warning()
     end
 end
 
-local function CreateAnchors()
-    local anchor = CreateFrame("button", "OpenRollsAnchor", UIParent)
-    
-    anchor:SetBackdrop({
-        bgFile="Interface/Tooltips/UI-Tooltip-Background",--"Interface\\DialogFrame\\UI-DialogBox-Background",
-        edgeFile=nil, 
-        tile = true, tileSize = 32, edgeSize = 32, 
-        insets = { left = 8, right = 8, top = 8, bottom = 8 }
-    }  )
-    anchor:SetBackdropColor(1,0,0,1)
-    anchor:SetToplevel(true)
-    anchor:SetFrameStrata("FULLSCREEN_DIALOG")        
-    anchor:SetWidth(178)
-    anchor:SetHeight(50)
-    anchor:EnableMouse()
-    anchor:SetMovable(true)
-    anchor:SetScript("OnMouseDown", function(frame, button) 
-        if button == "LeftButton" then
-            frame:StartMoving() 
-            frame.isMoving = true
-        end
-    end)
-    anchor:SetScript("OnMouseUp", function(frame, button) 
-        if button == "LeftButton" and frame.isMoving then
-            frame:StopMovingOrSizing() 
-            frame.isMoving = false
-        end
-    end)
-    anchor:RegisterForClicks("RightButtonUp")
-    anchor:SetScript("OnClick", function(frame) frame:Hide() end)
-    anchor:SetScript("OnHide", function(frame) 
-        if frame.isMoving then 
-            frame:StopMovingOrSizing() 
-            frame.isMoving = false
-        end 
-    end)
-    
-    local anchorString = 
-        anchor:CreateFontString("OpenRollsAnchorString", "OVERLAY", "GameFontNormal")
-    anchorString:SetPoint("CENTER", anchor, "CENTER")
-    anchorString:SetText("Loot Window Anchor")
-    
-    OpenRolls.anchor = anchor
-    anchor:Hide()
-    
-    anchor = CreateFrame("button", "OpenRollsNameAnchor", UIParent)
-    
-    anchor:SetBackdrop({
-        bgFile="Interface/Tooltips/UI-Tooltip-Background",--"Interface\\DialogFrame\\UI-DialogBox-Background",
-        edgeFile=nil, 
-        tile = true, tileSize = 32, edgeSize = 32, 
-        insets = { left = 8, right = 8, top = 8, bottom = 8 }
-    }  )
-    anchor:SetBackdropColor(1,0,0,1)
-    anchor:SetToplevel(true)
-    anchor:SetFrameStrata("FULLSCREEN_DIALOG")        
-    anchor:SetWidth(178)
-    anchor:SetHeight(50)
-    anchor:EnableMouse()
-    anchor:SetMovable(true)
-    anchor:SetScript("OnMouseDown", function(frame, button) 
-        if button == "LeftButton" then
-            frame:StartMoving() 
-            frame.isMoving = true
-        end
-    end)
-    anchor:SetScript("OnMouseUp", function(frame, button) 
-        if button == "LeftButton" and frame.isMoving then
-            frame:StopMovingOrSizing() 
-            frame.isMoving = false
-        end
-    end)
-    anchor:RegisterForClicks("RightButtonUp")
-    anchor:SetScript("OnClick", function(frame) frame:Hide() end)
-    anchor:SetScript("OnHide", function(frame) 
-        if frame.isMoving then 
-            frame:StopMovingOrSizing() 
-            frame.isMoving = false
-        end 
-    end)
-    
-    anchorString = 
-        anchor:CreateFontString("OpenRollsNameAnchorString", "OVERLAY", "GameFontNormal")
-    anchorString:SetPoint("CENTER", anchor, "CENTER")
-    anchorString:SetText("Name Frame Anchor")
-    
-    OpenRolls.namesAnchor = anchor
-    anchor:Hide()
-end
 
 function OpenRolls:OnInitialize()    
     SummaryFrame = OpenRolls:CreateSummaryFrame("OpenRollsSummaryFrame", AssignRoll)
-    
-    CreateAnchors()
-    
-    NamesFrame.bankName:ClearAllPoints()
-    NamesFrame.bankName:SetPoint("TOPLEFT", OpenRolls.namesAnchor, "TOPLEFT", 19, -26)
+
     OpenRolls:ScheduleTimer(function()
         OpenRolls:InitializeSavedVariables()
         local Data = OpenRollsData
         NamesFrame.bankName:SetText(Data.Banker)
         NamesFrame.chantName:SetText(Data.Disenchanter)
-        OpenRolls.anchor:SetPoint(Data.LootFramesAnchor, UIParent, Data.LootFramesAnchor, Data.LootFramesOffset.horizontal, Data.LootFramesOffset.vertical)
-        OpenRolls.namesAnchor:SetPoint(Data.NameFramesAnchor, UIParent, Data.NameFramesAnchor, Data.NameFramesOffset.horizontal, Data.NameFramesOffset.vertical)
+        local anchor = Data.NameFramesAnchor
+        local anchorFrom = Data.NameFramesAnchorFrom
+        local anchorTo = Data.NameFramesAnchorTo
+        local offset = Data.NameFramesOffset
+        NamesFrame:SetPoint(anchorFrom, anchor, anchorTo, offset.horizontal, offset.vertical)
+        OpenRolls:CreateConfig()
         end, 1)
     
 end
@@ -319,13 +243,6 @@ function OpenRolls:PLAYER_LEAVING_WORLD()
     local Data = OpenRollsData
     Data.Disenchanter = NamesFrame.chantName:GetText()
     Data.Banker = NamesFrame.bankName:GetText()
-    local anchor,x,y = select(3, OpenRolls.anchor:GetPoint(1))
-    Data.LootFramesAnchor = anchor
-    Data.LootFramesOffset = {horizontal = math.floor(x), vertical = math.floor(y)}
-
-    anchor,x,y = select(3, OpenRolls.namesAnchor:GetPoint(1))
-    Data.NameFramesAnchor = anchor
-    Data.NameFramesOffset = {horizontal = math.floor(x), vertical = math.floor(y)}    
 end
 
 
@@ -487,14 +404,26 @@ OpenRolls:RegisterChatCommand("openroll", CommandLine)
 local lewt = {}
 
 --This shifts loot windows up when one closes
-local function RepositionLootWindows()
+function OpenRolls:RepositionLootWindows()
     if #lewt == 0 then return end
     lewt[1]:ClearAllPoints()
-    lewt[1]:SetPoint("TOPLEFT", OpenRolls.anchor, "TOPLEFT")
+    local Data = OpenRollsData
+    local anchor = Data.LootFramesAnchor
+    local anchorTo = Data.LootFramesAnchorTo
+    local anchorFrom = Data.LootFramesAnchorFrom
+    local offset = Data.LootFramesOffset
+    
+    lewt[1]:SetPoint(anchorFrom, anchor, anchorTo, offset.horizontal, offset.vertical)
     for i = 2, #lewt do
         lewt[i]:ClearAllPoints()
         lewt[i]:SetPoint("TOPLEFT", lewt[i-1], "BOTTOMLEFT")
     end
+
+    anchor = Data.NameFramesAnchor
+    anchorTo = Data.NameFramesAnchorTo
+    anchorFrom = Data.NameFramesAnchorFrom
+    offset = Data.NameFramesOffset
+    NamesFrame:SetPoint(anchorFrom, anchor, anchorTo, offset.horizontal, offset.vertical)
 end
 
 --Support for Summary Hooks
@@ -563,7 +492,7 @@ function OpenRolls:LOOT_OPENED()
             item:Show()
         end
     end
-    RepositionLootWindows()
+    OpenRolls:RepositionLootWindows()
 end
 
 function OpenRolls:LOOT_CLOSED()

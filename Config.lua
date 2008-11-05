@@ -3,107 +3,53 @@ Provides the configuration panel within the Blizzard options frame
 ]]--
 
 do    
-    local pairs = pairs
-    
-    --Builds a series of radio buttons on top of each other
-    --name and parent are self explanatory
-    --options is a table with each element corresponding to a button
-    --  the index is the value that should be returned by GetSetting when that button is selected
-    --  the value is the text that should show next to the button itself
-    local function CreateRadioGroup(options, name, parent)
-        local frame = CreateFrame("frame", name, parent)
-        local radio = {}
-        local i = 0
-        local init = nil
-        local max, cur = 0, 0
-        local height = 0
-        for pos, j in pairs(options) do
-            local r = CreateFrame("CheckButton", name .. "Radio" .. i, frame, "UIRadioButtonTemplate")
-            r:SetPoint("TOPLEFT", frame, "TOPLEFT", 0, -i*20)
-            r.parent = frame
-            r.position = pos
-            r:SetScript("OnClick", function(self, ...)
-                self.parent:Click(self.position)
-            end)
-            if init == nil then 
-                init = pos
-                r:SetChecked(true)
-            end
+local pairs = pairs
 
-            local s = frame:CreateFontString(name .. "RadioString" .. i, "OVERLAY", "GameFontNormal")
-            s:SetPoint("TOPLEFT", r, "TOPRIGHT")
-            s:SetText(j)
+local GUILib = LibStub("dzjrGUI")
 
-            cur = s:GetWidth() + r:GetWidth()
-            if cur > max then max = cur end
-            height = height + s:GetHeight() + 5
-
-            radio[pos] = {button = r, text = s}
-            i = i + 1
-        end
-
-        frame.Click = function(self, position)
-            if position ~= self.checked then
-                self.radio[self.checked].button:SetChecked(false)
-                self.checked = position
-            end
-            self.radio[position].button:SetChecked(true)
-        end
-
-        frame.GetSetting = function(self)
-            return frame.checked
-        end
-
-        frame:SetWidth(max)
-        frame:SetHeight(height)
-        frame.radio = radio
-        frame.checked = init
-        return frame
-    end
-    
-    local ConfigPanel = CreateFrame("frame", "OpenRollsConfig")
+local function CreateMainConfig(name)
+    local ConfigPanel = CreateFrame("frame", name)
 
     local WhenShowString = 
-        ConfigPanel:CreateFontString("OpenRollsConfigWhenShowString", "OVERLAY", "GameFontNormal")
+        ConfigPanel:CreateFontString(name .."WhenShowString", "OVERLAY", "GameFontNormal")
     WhenShowString:SetPoint("TOPLEFT", ConfigPanel, "TOPLEFT", 6, -6)
     WhenShowString:SetText("When should loot windows display?")
         
-    local WhenShowBox = CreateRadioGroup({always = "Always", 
+    local WhenShowBox = GUILib.RadioGroup({always = "Always", 
                                           whenML = "When Masterlooter", 
                                           never = "Never"}, 
-                                        "OpenRollsConfigWhenShow", 
+                                        name .. "WhenShow", 
                                         ConfigPanel)
     WhenShowBox:SetPoint("TOPLEFT", WhenShowString, "BOTTOMLEFT", 20, -6)
     WhenShowBox:Click('whenML')
 
-    local RemindBox = CreateFrame("CheckButton", "OpenRollsConfigRemindBox", ConfigPanel, "UICheckButtonTemplate")
+    local RemindBox = CreateFrame("CheckButton", name .. "RemindBox", ConfigPanel, "UICheckButtonTemplate")
     RemindBox:SetPoint("TOPLEFT", WhenShowBox, "BOTTOMLEFT", -20, -6)
-    
+
     local RemindString = 
-        ConfigPanel:CreateFontString("OpenRollsConfigRemindString", "OVERLAY", "GameFontNormal")
+        ConfigPanel:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     RemindString:SetPoint("CENTER", RemindBox, "CENTER")
     RemindString:SetPoint("LEFT", RemindBox, "RIGHT")
     RemindString:SetText("Display roll summary window when roll is complete?")
-    
-    local ConfirmBox = CreateFrame("CheckButton", "OpenRollsConfigConfirmBox", ConfigPanel, "UICheckButtonTemplate")
+
+    local ConfirmBox = CreateFrame("CheckButton", name .. "ConfirmBox", ConfigPanel, "UICheckButtonTemplate")
     ConfirmBox:SetPoint("TOPLEFT", RemindBox, "BOTTOMLEFT", 0, 0)
-    
-    local ConfirmString = 
-        ConfigPanel:CreateFontString("OpenRollsConfigConfirmString", "OVERLAY", "GameFontNormal")
+
+    local ConfirmString = ConfigPanel:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     ConfirmString:SetPoint("CENTER", ConfirmBox, "CENTER")
     ConfirmString:SetPoint("LEFT", ConfirmBox, "RIGHT")
     ConfirmString:SetText("Confirm before looting?")
-    
-    local WarningBox = CreateFrame("CheckButton", "OpenRollsConfigWarningBox", ConfigPanel, "UICheckButtonTemplate")
+
+    local WarningBox = CreateFrame("CheckButton", name .. "WarningBox", ConfigPanel, "UICheckButtonTemplate")
     WarningBox:SetPoint("TOPLEFT", ConfirmBox, "BOTTOMLEFT", 0, 0)
-    
+
     local WarningString = 
-        ConfigPanel:CreateFontString("OpenRollsConfigWarningString", "OVERLAY", "GameFontNormal")
+        ConfigPanel:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     WarningString:SetPoint("CENTER", WarningBox, "CENTER")
     WarningString:SetPoint("LEFT", WarningBox, "RIGHT")
     WarningString:SetText("Provide warning period?")
-    
-    local MainDuration = CreateFrame("EditBox", "OpenRollsConfigMainDuration", ConfigPanel, "InputBoxTemplate")
+
+    local MainDuration = CreateFrame("EditBox", name .. "MainDuration", ConfigPanel, "InputBoxTemplate")
     MainDuration:SetAutoFocus(false)
     MainDuration:SetFontObject(ChatFontNormal)
     MainDuration:SetNumeric()
@@ -112,14 +58,14 @@ do
     MainDuration:SetPoint("TOPLEFT", WarningBox, "BOTTOMLEFT", 10, 0)
     MainDuration:SetHeight(20)
     MainDuration:SetWidth(30)
-    
+
     local MainDurationString = 
-        ConfigPanel:CreateFontString("OpenRollsConfigMainDurationString", "OVERLAY", "GameFontNormal")
+        ConfigPanel:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     MainDurationString:SetPoint("CENTER", MainDuration, "CENTER")
     MainDurationString:SetPoint("LEFT", MainDuration, "RIGHT")
     MainDurationString:SetText("Length of silent countdown")
-    
-    local SubDuration = CreateFrame("EditBox", "OpenRollsConfigSubDuration", ConfigPanel, "InputBoxTemplate")
+
+    local SubDuration = CreateFrame("EditBox", name .. "SubDuration", ConfigPanel, "InputBoxTemplate")
     SubDuration:SetAutoFocus(false)
     SubDuration:SetFontObject(ChatFontNormal)
     SubDuration:SetNumeric()
@@ -128,42 +74,13 @@ do
     SubDuration:SetPoint("TOPLEFT", MainDuration, "BOTTOMLEFT", 0, -10)
     SubDuration:SetHeight(20)
     SubDuration:SetWidth(30)
-    
+
     local SubDurationString = 
-        ConfigPanel:CreateFontString("OpenRollsConfigSubDurationString", "OVERLAY", "GameFontNormal")
+        ConfigPanel:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     SubDurationString:SetPoint("CENTER", SubDuration, "CENTER")
     SubDurationString:SetPoint("LEFT", SubDuration, "RIGHT")
     SubDurationString:SetText("Length of spammed countdown")
-    
-    local ShowAnchorButton = CreateFrame("button", "OpenRollsConfigShowAnchor", ConfigPanel, "UIPanelButtonTemplate")
-    ShowAnchorButton:SetPoint("TOPLEFT", SubDuration, "BOTTOMLEFT", -5, -10)
-    ShowAnchorButton:SetHeight(20)
-    ShowAnchorButton:SetWidth(150)
-    ShowAnchorButton:SetText("Toggle Anchors")
-    ShowAnchorButton:SetScript("OnClick", function(frame, ...) 
-        local anchor = OpenRolls.anchor
-        local namesAnchor = OpenRolls.namesAnchor
-        if anchor:IsShown() and namesAnchor:IsShown() then
-            anchor:Hide()
-            namesAnchor:Hide()
-        else
-            anchor:Show()
-            namesAnchor:Show()
-        end
-    end)
-    
-    local ResetAnchorButton = CreateFrame("button", "OpenRollsConfigResetAnchor", ConfigPanel, "UIPanelButtonTemplate")
-    ResetAnchorButton:SetPoint("TOPLEFT", ShowAnchorButton, "TOPRIGHT", 0, 0)
-    ResetAnchorButton:SetHeight(20)
-    ResetAnchorButton:SetWidth(150)
-    ResetAnchorButton:SetText("Reset Anchors")
-    ResetAnchorButton:SetScript("OnClick", function(frame, ...) 
-        OpenRolls.anchor:ClearAllPoints()
-        OpenRolls.anchor:SetPoint("TOPLEFT", UIParent, "TOPLEFT", 189, -116)
-        OpenRolls.namesAnchor:ClearAllPoints()
-        OpenRolls.namesAnchor:SetPoint("TOPLEFT", UIParent, "TOPLEFT", 56, -64)
-    end)
-    
+
     ConfigPanel:SetScript("OnShow", function(self, ...)
         local Data = OpenRollsData
         WhenShowBox:Click(Data.ShowLootWindows)
@@ -172,16 +89,8 @@ do
         WarningBox:SetChecked(Data.Warning)
         MainDuration:SetText(Data.SilentTime)
         SubDuration:SetText(Data.CountdownTime)
-
-        local anchor,x,y = select(3, OpenRolls.anchor:GetPoint(1))
-        Data.LootFramesAnchor = anchor
-        Data.LootFramesOffset = {horizontal = math.floor(x), vertical = math.floor(y)}
-
-        anchor,x,y = select(3, OpenRolls.namesAnchor:GetPoint(1))
-        Data.NameFramesAnchor = anchor
-        Data.NameFramesOffset = {horizontal = math.floor(x), vertical = math.floor(y)}
     end)
-    
+
     ConfigPanel.name = "Open Rolls"
     ConfigPanel.okay = function() 
         local Data = OpenRollsData
@@ -190,27 +99,489 @@ do
         Data.ConfirmBeforeLooting = not not ConfirmBox:GetChecked()
         Data.Warning = not not WarningBox:GetChecked()
         Data.SilentTime = tonumber(MainDuration:GetText())
-        Data.CountdownTime = tonumber(SubDuration:GetText())
+        Data.CountdownTime = tonumber(SubDuration:GetText()) 
+    end
+    
+    return ConfigPanel
+end
 
-        local anchor,x,y = select(3, OpenRolls.anchor:GetPoint(1))
-        Data.LootFramesAnchor = anchor
-        Data.LootFramesOffset = {horizontal = math.floor(x), vertical = math.floor(y)}   
-        anchor,x,y = select(3, OpenRolls.namesAnchor:GetPoint(1))
-        Data.NameFramesAnchor = anchor
-        Data.NameFramesOffset = {horizontal = math.floor(x), vertical = math.floor(y)}   
-    end
+local sampleNameFrame
+local sampleAnchor
+local sampleLootWindow
+do --Create Sample Windows
+local backdrop = {bgFile="Interface/Tooltips/UI-Tooltip-Background",
+                  edgeFile=nil,  
+                  tile = true, 
+                  tileSize = 32, 
+                  edgeSize = 32,  
+                  insets = { left = 8, right = 8, top = 8, bottom = 8 }}
+
+local frame = CreateFrame("frame", "OpenRollConfigSampleName", UIParent)
+frame:SetBackdrop(backdrop) 
+frame:SetBackdropColor(1,0,0,1) 
+frame:SetToplevel(true) 
+frame:SetFrameStrata("FULLSCREEN_DIALOG")  
+frame:SetWidth(178) 
+frame:SetHeight(50) 
+local obj = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal") 
+obj:SetPoint("CENTER", frame, "CENTER") 
+obj:SetText("Name Frame")
+frame:Hide()
+sampleNameFrame = frame
+
+frame = CreateFrame("frame", "OpenRollConfigSampleLoot", UIParent)
+frame:SetBackdrop(backdrop) 
+frame:SetBackdropColor(0,0,1,1) 
+frame:SetToplevel(true) 
+frame:SetFrameStrata("FULLSCREEN_DIALOG")  
+frame:SetWidth(178) 
+frame:SetHeight(50) 
+obj = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal") 
+obj:SetPoint("CENTER", frame, "CENTER") 
+obj:SetText("Loot Frame")
+frame:Hide()
+sampleLootFrame = frame
+
+frame = CreateFrame("frame", "OpenRollConfigSampleAnchor", UIParent)
+frame:SetBackdrop(backdrop) 
+frame:SetBackdropColor(0,1,0,1) 
+frame:SetToplevel(true) 
+frame:SetFrameStrata("FULLSCREEN_DIALOG")  
+frame:SetWidth(200) 
+frame:SetHeight(260) 
+frame:SetPoint("TOPLEFT", LootFrame, "TOPLEFT")
+obj = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal") 
+obj:SetPoint("CENTER", frame, "CENTER") 
+obj:SetText("Anchor")
+frame:Hide()
+sampleAnchor = frame
+end
+
+local function CreateNameFrameConfig(framename, name, parent)
+    local panel = CreateFrame("frame", name, InterfaceOptionsFramePanelContainer)
+    panel.name = name
+    panel.parent = parent
     
-    ConfigPanel.cancel = function()
+    local title = panel:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
+	title:SetPoint("TOPLEFT", 16, -16)
+	title:SetText("Name Frame")
+    
+    local subtitle = panel:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+	subtitle:SetHeight(35)
+	subtitle:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -8)
+	subtitle:SetPoint("RIGHT", panel, -8, 0)
+	subtitle:SetNonSpaceWrap(true)
+	subtitle:SetJustifyH("LEFT")
+	subtitle:SetJustifyV("TOP")
+	subtitle:SetText("The name frame is the shared window that holds the name of the Banker and " ..
+                     "Disenchanter.  By default, it is placed above the loot window, and moves " ..
+                     "with it.")
+    
+    title = panel:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+    title:SetPoint("TOPLEFT", subtitle, "BOTTOMLEFT", 0, -8)
+    title:SetText("Anchor")
+
+    subtitle = panel:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+	subtitle:SetHeight(55)
+	subtitle:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -8)
+	subtitle:SetPoint("RIGHT", panel, -8, 0)
+	subtitle:SetNonSpaceWrap(true)
+	subtitle:SetJustifyH("LEFT")
+	subtitle:SetJustifyV("TOP")
+	subtitle:SetText("The anchor is used to attach the name frame to an existing object.  If that " ..
+                     "object moves, the name frame will move with it.  'LootFrame' is the object " ..
+                     "that represents a loot window.  'UIParent' represents the entire screen; " ..
+                     "anchoring to this object will give the name frame a static location that " ..
+                     "will not move under normal circumstances.")
+
+    local obj = GUILib.InputBox(name .. "Anchor", panel)
+    obj:SetWidth(200)
+    obj:SetPoint("TOPLEFT", subtitle, "BOTTOMLEFT", 3, -8)
+    panel.Anchor = obj
+
+    title = panel:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+    title:SetPoint("TOPLEFT", obj, "BOTTOMLEFT", -3, -8)
+    title:SetText("Anchor points")
+
+    subtitle = panel:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+	subtitle:SetHeight(50)
+	subtitle:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -8)
+	subtitle:SetPoint("RIGHT", panel, -8, 0)
+	subtitle:SetNonSpaceWrap(true)
+	subtitle:SetJustifyH("LEFT")
+	subtitle:SetJustifyV("TOP")
+	subtitle:SetText("These define how the name frame is positioned relative to its anchor. The " ..
+                     "two points remain the same distance apart whenever you move the anchor " ..
+                     "object.")
+
+    local factory = function(str) return function() 
+        panel:UpdateSampleFrame()
+    end end
+    obj = GUILib.DropdownMenu({["TOPLEFT"] = factory("TOPLEFT"), 
+                               ["TOPRIGHT"] = factory("TOPRIGHT"), 
+                               ["BOTTOMLEFT"] = factory("BOTTOMLEFT"),
+                               ["BOTTOMRIGHT"] = factory("BOTTOMRIGHT"),
+                               ["CENTER"] = factory("CENTER"),
+                               ["TOP"] = factory("TOP"),
+                               ["BOTTOM"] = factory("BOTTOM"),
+                               ["LEFT"] = factory("LEFT"),
+                               ["RIGHT"] = factory("RIGHT")}, 
+                               name .. "NameFramePoint", panel)
+    obj:SetWidth(162)
+    obj:SetPoint("TOPLEFT", subtitle, "BOTTOMLEFT", 0, -8)
+    panel.NameFramePoint = obj
+
+    subtitle = panel:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+    subtitle:SetPoint("BOTTOMLEFT", obj, "TOPLEFT", 0, 8)
+    subtitle:SetPoint("BOTTOMRIGHT", obj, "TOPRIGHT", 0, 8)
+    subtitle:SetJustifyH("CENTER")
+    subtitle:SetText("Name Frame Point")
+
+    obj = GUILib.DropdownMenu({["TOPLEFT"] = factory("TOPLEFT"), 
+                               ["TOPRIGHT"] = factory("TOPRIGHT"), 
+                               ["BOTTOMLEFT"] = factory("BOTTOMLEFT"),
+                               ["BOTTOMRIGHT"] = factory("BOTTOMRIGHT"),
+                               ["CENTER"] = factory("CENTER"),
+                               ["TOP"] = factory("TOP"),
+                               ["BOTTOM"] = factory("BOTTOM"),
+                               ["LEFT"] = factory("LEFT"),
+                               ["RIGHT"] = factory("RIGHT")}, 
+                               name .. "AnchorPoint", panel)
+    obj:SetWidth(162)
+    obj:SetPoint("TOPLEFT", panel.NameFramePoint, "TOPRIGHT", 8, 0)
+    panel.AnchorPoint = obj
+
+    subtitle = panel:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+    subtitle:SetPoint("BOTTOMLEFT", obj, "TOPLEFT", 0, 8)
+    subtitle:SetPoint("BOTTOMRIGHT", obj, "TOPRIGHT", 0, 8)
+    subtitle:SetJustifyH("CENTER")
+    subtitle:SetText("Anchor Point")
+
+    title = panel:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+    title:SetPoint("TOPLEFT", panel.NameFramePoint, "BOTTOMLEFT", 0, -8)
+    title:SetText("Offset")
+
+    subtitle = panel:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+	subtitle:SetHeight(35)
+	subtitle:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -8)
+	subtitle:SetPoint("RIGHT", panel, -8, 0)
+	subtitle:SetNonSpaceWrap(true)
+	subtitle:SetJustifyH("LEFT")
+	subtitle:SetJustifyV("TOP")
+	subtitle:SetText("This represents the distance the name frame will be from its anchor. " ..
+                     "Positive values move the name frame up or to the right; negative values " .. 
+                     "down or to the left.")
+
+    title = panel:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+    title:SetPoint("TOPLEFT", subtitle, "BOTTOMLEFT", 0, -8)
+    title:SetText("Horizontal:")
+    
+    obj = GUILib.InputBox(name .. "Horizontal", panel)
+    obj:SetWidth(35)
+    obj:SetPoint("CENTER")
+    obj:SetPoint("LEFT", title, "RIGHT", 10, 0)
+    obj:SetScript("OnEnterPressed", function(self) 
+        local number = tonumber(self:GetText())
+        if not number then 
+            number = OpenRollsData.NameFramesOffset.horizontal
+        end
+        self:SetText(tostring(number))
+        self:GetParent():UpdateSampleFrame()
+    end)
+    panel.Horizontal = obj
+    
+    subtitle = panel:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+    subtitle:SetPoint("TOPLEFT", title, "TOPRIGHT", 50, 0)
+    subtitle:SetText("Vertical:")
+
+    obj = GUILib.InputBox(name .. "Vertical", panel)
+    obj:SetWidth(35)
+    obj:SetPoint("CENTER")
+    obj:SetPoint("LEFT", subtitle, "RIGHT", 10, 0)
+    obj:SetScript("OnEnterPressed", function(self) 
+        local number = tonumber(self:GetText())
+        if not number then 
+            number = OpenRollsData.NameFramesOffset.vertical
+        end
+        self:SetText(tostring(number))
+        self:GetParent():UpdateSampleFrame()
+    end)
+    panel.Vertical = obj
+    
+    local btn = function(self)
+        sampleAnchor:Show()
+        sampleLootFrame:Show()
+        sampleNameFrame:Show()
+    end
+
+    obj = GUILib.Button("Show", btn, name .. "Show", panel)
+    obj:SetPoint("CENTER")
+    obj:SetPoint("BOTTOM", 0, 10)
+    GUILib.AddMouseoverText(obj, "Shows a sample anchor and name frame.  Use as a " ..
+                                 "reference; the actual placement may not match.",
+                                 1, 1, 1, 1)
+
+    panel.LoadData = function(self, Data)
+        self.Anchor:SetText(Data.NameFramesAnchor)
+        self.NameFramePoint:SetSelected(Data.NameFramesAnchorFrom)
+        self.AnchorPoint:SetSelected(Data.NameFramesAnchorTo)
+        self.Horizontal:SetText(tostring(Data.NameFramesOffset.horizontal))
+        self.Vertical:SetText(tostring(Data.NameFramesOffset.vertical))
+        self:UpdateSampleFrame()
+    end
+    panel:SetScript("OnShow", function(self) self:LoadData(OpenRollsData) end)
+
+    panel:SetScript("OnHide", function(self)
+        sampleNameFrame:Hide()
+        sampleLootFrame:Hide()
+        sampleAnchor:Hide()
+    end)
+
+    panel.okay = function(self)
         local Data = OpenRollsData
-        OpenRolls.anchor:ClearAllPoints()
-        OpenRolls.anchor:SetPoint(Data.LootFramesAnchor, UIParent, Data.LootFramesAnchor, Data.LootFramesOffset.horizontal, Data.LootFramesOffset.vertical)
-        OpenRolls.namesAnchor:ClearAllPoints()
-        OpenRolls.namesAnchor:SetPoint(Data.NameFramesAnchor, UIParent, Data.NameFramesAnchor, Data.NameFramesOffset.horizontal, Data.NameFramesOffset.vertical)
+        Data.NameFramesAnchor = self.Anchor:GetText()
+        Data.NameFramesAnchorFrom = self.NameFramePoint:GetSelected()
+        Data.NameFramesAnchorTo = self.AnchorPoint:GetSelected()
+        Data.NameFramesOffset = {horizontal = tonumber(self.Horizontal:GetText()),
+                                 vertical = tonumber(self.Vertical:GetText())}
+        OpenRolls:RepositionLootWindows()
+    end
+
+    panel.default = function(self) self:LoadData(OpenRolls.Defaults) end
+
+    panel.UpdateSampleFrame = function(self)
+        local anchorPoint = self.AnchorPoint:GetSelected()
+        local namePoint = self.NameFramePoint:GetSelected()
+        local x = self.Horizontal:GetText()
+        local y = self.Vertical:GetText()
+        sampleNameFrame:ClearAllPoints()
+        sampleNameFrame:SetPoint(namePoint, sampleAnchor, anchorPoint, x, y)        
+    end
+
+    panel:Hide()
+    panel:LoadData(OpenRollsData)
+    return panel
+end
+
+local function CreateLootFrameConfig(framename, name, parent)
+    local panel = CreateFrame("frame", name, InterfaceOptionsFramePanelContainer)
+    panel.name = name
+    panel.parent = parent
+    
+    local title = panel:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
+	title:SetPoint("TOPLEFT", 16, -16)
+	title:SetText("Item Frame")
+    
+    local subtitle = panel:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+	subtitle:SetHeight(35)
+	subtitle:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -8)
+	subtitle:SetPoint("RIGHT", panel, -8, 0)
+	subtitle:SetNonSpaceWrap(true)
+	subtitle:SetJustifyH("LEFT")
+	subtitle:SetJustifyV("TOP")
+	subtitle:SetText("The item frame displays the options available to items " ..
+                     "eligible for master looting.  By default, it is placed to the " ..
+                     "right of the loot window, and grows downward as additional " ..
+                     "items are added.")
+    
+    title = panel:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+    title:SetPoint("TOPLEFT", subtitle, "BOTTOMLEFT", 0, -8)
+    title:SetText("Anchor")
+
+    subtitle = panel:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+	subtitle:SetHeight(55)
+	subtitle:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -8)
+	subtitle:SetPoint("RIGHT", panel, -8, 0)
+	subtitle:SetNonSpaceWrap(true)
+	subtitle:SetJustifyH("LEFT")
+	subtitle:SetJustifyV("TOP")
+	subtitle:SetText("The anchor is used to attach the item frame to an existing " ..
+                     "object.  If that object moves, the item frame will move with "..
+                     "it.  'LootFrame' is the object that represents a loot window. " ..
+                     "'UIParent' represents the entire screen; anchoring to this " ..
+                     "object will give the item frame a static location that will " ..
+                     "not move under normal circumstances.")
+
+    local obj = GUILib.InputBox(name .. "Anchor", panel)
+    obj:SetWidth(200)
+    obj:SetPoint("TOPLEFT", subtitle, "BOTTOMLEFT", 3, -8)
+    panel.Anchor = obj
+
+    title = panel:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+    title:SetPoint("TOPLEFT", obj, "BOTTOMLEFT", -3, -8)
+    title:SetText("Anchor points")
+
+    subtitle = panel:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+	subtitle:SetHeight(50)
+	subtitle:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -8)
+	subtitle:SetPoint("RIGHT", panel, -8, 0)
+	subtitle:SetNonSpaceWrap(true)
+	subtitle:SetJustifyH("LEFT")
+	subtitle:SetJustifyV("TOP")
+	subtitle:SetText("These define how the item frame is positioned relative to its " ..
+                     "anchor. The two points remain the same distance apart " ..
+                     "whenever you move the anchor object.")
+
+    local factory = function(str) return function() 
+        panel:UpdateSampleFrame()
+    end end
+    obj = GUILib.DropdownMenu({["TOPLEFT"] = factory("TOPLEFT"), 
+                               ["TOPRIGHT"] = factory("TOPRIGHT"), 
+                               ["BOTTOMLEFT"] = factory("BOTTOMLEFT"),
+                               ["BOTTOMRIGHT"] = factory("BOTTOMRIGHT"),
+                               ["CENTER"] = factory("CENTER"),
+                               ["TOP"] = factory("TOP"),
+                               ["BOTTOM"] = factory("BOTTOM"),
+                               ["LEFT"] = factory("LEFT"),
+                               ["RIGHT"] = factory("RIGHT")}, 
+                               name .. "ItemFramePoint", panel)
+    obj:SetWidth(162)
+    obj:SetPoint("TOPLEFT", subtitle, "BOTTOMLEFT", 0, -8)
+    panel.LootFramePoint = obj
+
+    subtitle = panel:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+    subtitle:SetPoint("BOTTOMLEFT", obj, "TOPLEFT", 0, 8)
+    subtitle:SetPoint("BOTTOMRIGHT", obj, "TOPRIGHT", 0, 8)
+    subtitle:SetJustifyH("CENTER")
+    subtitle:SetText("Item Frame Point")
+
+    obj = GUILib.DropdownMenu({["TOPLEFT"] = factory("TOPLEFT"), 
+                               ["TOPRIGHT"] = factory("TOPRIGHT"), 
+                               ["BOTTOMLEFT"] = factory("BOTTOMLEFT"),
+                               ["BOTTOMRIGHT"] = factory("BOTTOMRIGHT"),
+                               ["CENTER"] = factory("CENTER"),
+                               ["TOP"] = factory("TOP"),
+                               ["BOTTOM"] = factory("BOTTOM"),
+                               ["LEFT"] = factory("LEFT"),
+                               ["RIGHT"] = factory("RIGHT")}, 
+                               name .. "AnchorPoint", panel)
+    obj:SetWidth(162)
+    obj:SetPoint("TOPLEFT", panel.LootFramePoint, "TOPRIGHT", 8, 0)
+    panel.AnchorPoint = obj
+
+    subtitle = panel:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+    subtitle:SetPoint("BOTTOMLEFT", obj, "TOPLEFT", 0, 8)
+    subtitle:SetPoint("BOTTOMRIGHT", obj, "TOPRIGHT", 0, 8)
+    subtitle:SetJustifyH("CENTER")
+    subtitle:SetText("Anchor Point")
+
+    title = panel:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+    title:SetPoint("TOPLEFT", panel.LootFramePoint, "BOTTOMLEFT", 0, -8)
+    title:SetText("Offset")
+
+    subtitle = panel:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+	subtitle:SetHeight(35)
+	subtitle:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -8)
+	subtitle:SetPoint("RIGHT", panel, -8, 0)
+	subtitle:SetNonSpaceWrap(true)
+	subtitle:SetJustifyH("LEFT")
+	subtitle:SetJustifyV("TOP")
+	subtitle:SetText("This represents the distance the item frame will be from its " ..
+                     "anchor.  Positive values move the item frame up or to the " ..
+                     "right; negative values down or to the left.")
+
+    title = panel:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+    title:SetPoint("TOPLEFT", subtitle, "BOTTOMLEFT", 0, -8)
+    title:SetText("Horizontal:")
+    
+    obj = GUILib.InputBox(name .. "Horizontal", panel)
+    obj:SetWidth(35)
+    obj:SetPoint("CENTER")
+    obj:SetPoint("LEFT", title, "RIGHT", 10, 0)
+    obj:SetScript("OnEnterPressed", function(self) 
+        local number = tonumber(self:GetText())
+        if not number then 
+            number = OpenRollsData.LootFramesOffset.horizontal
+        end
+        self:SetText(tostring(number))
+        self:GetParent():UpdateSampleFrame()
+    end)
+    panel.Horizontal = obj
+    
+    subtitle = panel:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+    subtitle:SetPoint("TOPLEFT", title, "TOPRIGHT", 50, 0)
+    subtitle:SetText("Vertical:")
+
+    obj = GUILib.InputBox(name .. "Vertical", panel)
+    obj:SetWidth(35)
+    obj:SetPoint("CENTER")
+    obj:SetPoint("LEFT", subtitle, "RIGHT", 10, 0)
+    obj:SetScript("OnEnterPressed", function(self) 
+        local number = tonumber(self:GetText())
+        if not number then 
+            number = OpenRollsData.LootFramesOffset.vertical
+        end
+        self:SetText(tostring(number))
+        self:GetParent():UpdateSampleFrame()
+    end)
+    panel.Vertical = obj
+
+    local btn = function(self)
+        sampleAnchor:Show()
+        sampleLootFrame:Show()
+        sampleNameFrame:Show()
+    end
+
+    obj = GUILib.Button("Show", btn, name .. "Show", panel)
+    obj:SetPoint("CENTER")
+    obj:SetPoint("BOTTOM", 0, 10)
+    GUILib.AddMouseoverText(obj, "Shows a sample anchor and item frame.  Use as a " ..
+                                 "reference; the actual placement may not match.",
+                                 1, 1, 1, 1)
+
+    panel.LoadData = function(self, Data)
+        self.Anchor:SetText(Data.LootFramesAnchor)
+        self.LootFramePoint:SetSelected(Data.LootFramesAnchorFrom)
+        self.AnchorPoint:SetSelected(Data.LootFramesAnchorTo)
+        self.Horizontal:SetText(tostring(Data.LootFramesOffset.horizontal))
+        self.Vertical:SetText(tostring(Data.LootFramesOffset.vertical))
+        self:UpdateSampleFrame()
+    end
+    panel:SetScript("OnShow", function(self) self:LoadData(OpenRollsData) end)
+
+    panel:SetScript("OnHide", function(self)
+        sampleLootFrame:Hide()
+        sampleNameFrame:Hide()
+        sampleAnchor:Hide()
+    end)
+
+    panel.okay = function(self)
+        local Data = OpenRollsData
+        Data.LootFramesAnchor = self.Anchor:GetText()
+        Data.LootFramesAnchorFrom = self.LootFramePoint:GetSelected()
+        Data.LootFramesAnchorTo = self.AnchorPoint:GetSelected()
+        Data.LootFramesOffset = {horizontal = tonumber(self.Horizontal:GetText()),
+                                 vertical = tonumber(self.Vertical:GetText())}
+        OpenRolls:RepositionLootWindows()
     end
     
+    panel.default = function(self) self:LoadData(OpenRolls.Defaults) end
+
+    panel.UpdateSampleFrame = function(self)
+        local anchorPoint = self.AnchorPoint:GetSelected()
+        local lootPoint = self.LootFramePoint:GetSelected()
+        local x = self.Horizontal:GetText()
+        local y = self.Vertical:GetText()
+        sampleLootFrame:ClearAllPoints()
+        sampleLootFrame:SetPoint(lootPoint, sampleAnchor, anchorPoint, x, y)        
+    end
+
+    panel:Hide()
+    panel:LoadData(OpenRollsData)
+    return panel
+end
+
+
+function OpenRolls:ShowConfig()
+    InterfaceOptionsFrame_OpenToCategory("Name Frame")
+end
+
+function OpenRolls:CreateConfig()
+    local ConfigPanel = CreateMainConfig("OpenRollsConfig")
     InterfaceOptions_AddCategory(ConfigPanel)
-    
-    function OpenRolls:ShowConfig()
-        InterfaceOptionsFrame_OpenToFrame(ConfigPanel)
-    end
+    ConfigPanel = CreateNameFrameConfig("OpenRollsConfigNameFrame", "Name Frame", "Open Rolls")
+    InterfaceOptions_AddCategory(ConfigPanel)
+    ConfigPanel = CreateLootFrameConfig("OpenRollsConfigLootFrame", "Item Frame", "Open Rolls")
+    InterfaceOptions_AddCategory(ConfigPanel)    
+end
 end
