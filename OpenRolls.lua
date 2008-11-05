@@ -479,6 +479,11 @@ function OpenRolls:LOOT_OPENED()
     if OpenRollsData.ShowLootWindows == 'whenML' and (select(2, GetLootMethod())) ~= 0 then return end
     
     NamesFrame.frame:Show()
+    if #lewt > 0 then
+        for _, frame in pairs(lewt) do
+            frame:Release()
+        end
+    end
     lewt = {}
     local threshold = GetLootThreshold()
     for i = 1, GetNumLootItems() do
