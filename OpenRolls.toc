@@ -1,4 +1,4 @@
-## Interface: 20400
+## Interface: 30000
 ## Title: OpenRolls
 ## Author: Dennis Zickefoose, Jr
 ## Version: 1.01
