@@ -3,8 +3,27 @@ OpenRolls = LibStub("AceAddon-3.0"):NewAddon("OpenRolls",
 
 --I think this can be removed?  I really shouldn't have included a library I wrote as an expriment ><
 local Group = LibStub("GroupLib-1.0")
-    
-OpenRollsData = {}
+
+OpenRolls.Defaults = {
+    ShowSummaryWhenRollsOver = true,
+    ShowLootWindows = "whenML",
+    ConfirmBeforeLooting = true,
+    Disenchanter = "",
+    Banker = "",
+    Warning = true,
+    SilentTime = 25,
+    CountdownTime = 5,
+    RollMin = 1,
+    RollMax = 100,
+    LootFramesOffset = {horizontal = -68, vertical = -10},
+    LootFramesAnchor = "LootFrame",
+    LootFramesAnchorFrom = "TOPLEFT",
+    LootFramesAnchorTo = "TOPRIGHT",
+    NameFramesOffset = {horizontal = 61, vertical = -13},
+    NameFramesAnchor = "LootFrame",
+    NameFramesAnchorFrom = "BOTTOMLEFT",
+    NameFramesAnchorTo = "TOPLEFT"
+}
 
 --Regex that matches an item link
 local ItemLinkPattern = "|c%x+|H.+|h%[.+%]|h|r"
@@ -133,38 +152,6 @@ function OpenRolls:GetBanker()
     return NamesFrame.bankName:GetText()
 end
 
---helper function that initializes a saved variable if needed
---  var is the name of the variable [as a string]
---  initial is the initial value [as an actual value]
-local function Init(var, initial)
-    if OpenRollsData[var] == nil then
-        OpenRollsData[var] = initial
-    end
-    OpenRolls.Defaults[var] = initial
-end
-
-function OpenRolls:InitializeSavedVariables()
-    OpenRolls.Defaults = {}
-    Init("ShowSummaryWhenRollsOver", true)
-    Init("ShowLootWindows", "whenML")
-    Init("ConfirmBeforeLooting", true)
-    Init("Disenchanter", "")
-    Init("Banker", "")
-    Init("Warning", true)
-    Init("SilentTime", 25)
-    Init("CountdownTime", 5)
-    Init("RollMin", 1)
-    Init("RollMax", 100)
-    Init("LootFramesOffset", {horizontal = -68, vertical = -10})
-    Init("LootFramesAnchor", "LootFrame")
-    Init("LootFramesAnchorFrom", "TOPLEFT")
-    Init("LootFramesAnchorTo", "TOPRIGHT")
-    Init("NameFramesOffset", {horizontal = 61, vertical = -13})
-    Init("NameFramesAnchor", "LootFrame")
-    Init("NameFramesAnchorFrom", "BOTTOMLEFT")
-    Init("NameFramesAnchorTo", "TOPLEFT")
-end
-
 --a table of who has already rolled
 --  index is the character's name
 --  value is the character's roll
@@ -223,19 +210,17 @@ end
 function OpenRolls:OnInitialize()    
     SummaryFrame = OpenRolls:CreateSummaryFrame("OpenRollsSummaryFrame", AssignRoll)
 
-    OpenRolls:ScheduleTimer(function()
-        OpenRolls:InitializeSavedVariables()
-        local Data = OpenRollsData
-        NamesFrame.bankName:SetText(Data.Banker)
-        NamesFrame.chantName:SetText(Data.Disenchanter)
-        local anchor = Data.NameFramesAnchor
-        local anchorFrom = Data.NameFramesAnchorFrom
-        local anchorTo = Data.NameFramesAnchorTo
-        local offset = Data.NameFramesOffset
-        NamesFrame:SetPoint(anchorFrom, anchor, anchorTo, offset.horizontal, offset.vertical)
-        OpenRolls:CreateConfig()
-        end, 1)
+    OpenRollsData = setmetatable(OpenRollsData or {}, {__index = OpenRolls.Defaults})
     
+    local Data = OpenRollsData
+    NamesFrame.bankName:SetText(Data.Banker)
+    NamesFrame.chantName:SetText(Data.Disenchanter)
+    local anchor = Data.NameFramesAnchor
+    local anchorFrom = Data.NameFramesAnchorFrom
+    local anchorTo = Data.NameFramesAnchorTo
+    local offset = Data.NameFramesOffset
+    NamesFrame:SetPoint(anchorFrom, anchor, anchorTo, offset.horizontal, offset.vertical)
+    OpenRolls:CreateConfig()    
 end
 
 --Ensures changes get saved
