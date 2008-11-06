@@ -194,7 +194,9 @@ local function CreateNameFrameConfig(framename, name, parent)
                      "anchoring to this object will give the name frame a static location that " ..
                      "will not move under normal circumstances.")
 
-    local obj = GUILib.InputBox(name .. "Anchor", panel)
+    local obj = GUILib.InputBox(name .. "Anchor", panel, function(self)
+        self:GetParent():UpdateData()
+    end)
     obj:SetWidth(200)
     obj:SetPoint("TOPLEFT", subtitle, "BOTTOMLEFT", 3, -8)
     panel.Anchor = obj
@@ -215,7 +217,7 @@ local function CreateNameFrameConfig(framename, name, parent)
                      "object.")
 
     local factory = function(str) return function() 
-        panel:UpdateSampleFrame()
+        panel:UpdateData()
     end end
     obj = GUILib.DropdownMenu({["TOPLEFT"] = factory("TOPLEFT"), 
                                ["TOPRIGHT"] = factory("TOPRIGHT"), 
@@ -237,6 +239,9 @@ local function CreateNameFrameConfig(framename, name, parent)
     subtitle:SetJustifyH("CENTER")
     subtitle:SetText("Name Frame Point")
 
+    factory = function(str) return function() 
+        panel:UpdateData()
+    end end
     obj = GUILib.DropdownMenu({["TOPLEFT"] = factory("TOPLEFT"), 
                                ["TOPRIGHT"] = factory("TOPRIGHT"), 
                                ["BOTTOMLEFT"] = factory("BOTTOMLEFT"),
@@ -276,36 +281,34 @@ local function CreateNameFrameConfig(framename, name, parent)
     title:SetPoint("TOPLEFT", subtitle, "BOTTOMLEFT", 0, -8)
     title:SetText("Horizontal:")
     
-    obj = GUILib.InputBox(name .. "Horizontal", panel)
-    obj:SetWidth(35)
-    obj:SetPoint("CENTER")
-    obj:SetPoint("LEFT", title, "RIGHT", 10, 0)
-    obj:SetScript("OnEnterPressed", function(self) 
+    obj = GUILib.InputBox(name .. "Horizontal", panel, function(self) 
         local number = tonumber(self:GetText())
         if not number then 
             number = OpenRollsData.NameFramesOffset.horizontal
         end
         self:SetText(tostring(number))
-        self:GetParent():UpdateSampleFrame()
+        self:GetParent():UpdateData()
     end)
+    obj:SetWidth(35)
+    obj:SetPoint("CENTER")
+    obj:SetPoint("LEFT", title, "RIGHT", 10, 0)
     panel.Horizontal = obj
     
     subtitle = panel:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
     subtitle:SetPoint("TOPLEFT", title, "TOPRIGHT", 50, 0)
     subtitle:SetText("Vertical:")
 
-    obj = GUILib.InputBox(name .. "Vertical", panel)
-    obj:SetWidth(35)
-    obj:SetPoint("CENTER")
-    obj:SetPoint("LEFT", subtitle, "RIGHT", 10, 0)
-    obj:SetScript("OnEnterPressed", function(self) 
+    obj = GUILib.InputBox(name .. "Vertical", panel, function(self) 
         local number = tonumber(self:GetText())
         if not number then 
             number = OpenRollsData.NameFramesOffset.vertical
         end
         self:SetText(tostring(number))
-        self:GetParent():UpdateSampleFrame()
+        self:GetParent():UpdateData()
     end)
+    obj:SetWidth(35)
+    obj:SetPoint("CENTER")
+    obj:SetPoint("LEFT", subtitle, "RIGHT", 10, 0)
     panel.Vertical = obj
     
     local btn = function(self)
@@ -322,14 +325,23 @@ local function CreateNameFrameConfig(framename, name, parent)
                                  1, 1, 1, 1)
 
     panel.LoadData = function(self, Data)
-        self.Anchor:SetText(Data.NameFramesAnchor)
+        self.Anchor:SetText(Data.NameFramesAnchorFrame)
         self.NameFramePoint:SetSelected(Data.NameFramesAnchorFrom)
         self.AnchorPoint:SetSelected(Data.NameFramesAnchorTo)
         self.Horizontal:SetText(tostring(Data.NameFramesOffset.horizontal))
         self.Vertical:SetText(tostring(Data.NameFramesOffset.vertical))
         self:UpdateSampleFrame()
+        self:UpdateData()
     end
-    panel:SetScript("OnShow", function(self) self:LoadData(OpenRollsData) end)
+    panel:SetScript("OnShow", function(self) 
+        if not self.OriginalValues then
+            self.OriginalValues = {NameFramesAnchorFrame = OpenRollsData.NameFramesAnchorFrame,
+                                   NameFramesAnchorTo = OpenRollsData.NameFramesAnchorTo,
+                                   NameFramesAnchorFrom = OpenRollsData.NameFramesAnchorFrom,
+                                   NameFramesOffset = OpenRollsData.NameFramesOffset}
+            self:LoadData(OpenRollsData) 
+        end
+    end)
 
     panel:SetScript("OnHide", function(self)
         sampleNameFrame:Hide()
@@ -338,16 +350,37 @@ local function CreateNameFrameConfig(framename, name, parent)
     end)
 
     panel.okay = function(self)
+        self:UpdateData()
+        self.OriginalValues = nil
+    end
+
+    panel.cancel = function(self)
         local Data = OpenRollsData
-        Data.NameFramesAnchor = self.Anchor:GetText()
-        Data.NameFramesAnchorFrom = self.NameFramePoint:GetSelected()
-        Data.NameFramesAnchorTo = self.AnchorPoint:GetSelected()
-        Data.NameFramesOffset = {horizontal = tonumber(self.Horizontal:GetText()),
-                                 vertical = tonumber(self.Vertical:GetText())}
+        for i, j in pairs(self.OriginalValues) do
+            Data[i] = j
+        end
         OpenRolls:RepositionLootWindows()
+        self.OriginalValues = nil
     end
 
     panel.default = function(self) self:LoadData(OpenRolls.Defaults) end
+
+    panel.UpdateData = function(self)
+        local Data = OpenRollsData
+        Data.NameFramesAnchorFrame = self.Anchor:GetText()
+        Data.NameFramesAnchorTo = self.AnchorPoint:GetSelected()
+        Data.NameFramesAnchorFrom = self.NameFramePoint:GetSelected()
+        Data.NameFramesOffset = {horizontal = tonumber(self.Horizontal:GetText()),
+                                 vertical = tonumber(self.Vertical:GetText())}
+        OpenRolls:RepositionLootWindows()
+        
+        sampleNameFrame:ClearAllPoints()
+        sampleNameFrame:SetPoint(Data.NameFramesAnchorFrom, 
+                                 sampleAnchor, 
+                                 Data.NameFramesAnchorTo,
+                                 Data.NameFramesOffset.horizontal,
+                                 Data.NameFramesOffset.vertical)
+    end
 
     panel.UpdateSampleFrame = function(self)
         local anchorPoint = self.AnchorPoint:GetSelected()
@@ -402,7 +435,9 @@ local function CreateLootFrameConfig(framename, name, parent)
                      "object will give the item frame a static location that will " ..
                      "not move under normal circumstances.")
 
-    local obj = GUILib.InputBox(name .. "Anchor", panel)
+    local obj = GUILib.InputBox(name .. "Anchor", panel, function(self)
+        self:GetParent():UpdateData()
+    end)
     obj:SetWidth(200)
     obj:SetPoint("TOPLEFT", subtitle, "BOTTOMLEFT", 3, -8)
     panel.Anchor = obj
@@ -423,7 +458,7 @@ local function CreateLootFrameConfig(framename, name, parent)
                      "whenever you move the anchor object.")
 
     local factory = function(str) return function() 
-        panel:UpdateSampleFrame()
+        panel:UpdateData()
     end end
     obj = GUILib.DropdownMenu({["TOPLEFT"] = factory("TOPLEFT"), 
                                ["TOPRIGHT"] = factory("TOPRIGHT"), 
@@ -484,36 +519,34 @@ local function CreateLootFrameConfig(framename, name, parent)
     title:SetPoint("TOPLEFT", subtitle, "BOTTOMLEFT", 0, -8)
     title:SetText("Horizontal:")
     
-    obj = GUILib.InputBox(name .. "Horizontal", panel)
-    obj:SetWidth(35)
-    obj:SetPoint("CENTER")
-    obj:SetPoint("LEFT", title, "RIGHT", 10, 0)
-    obj:SetScript("OnEnterPressed", function(self) 
+    obj = GUILib.InputBox(name .. "Horizontal", panel, function(self) 
         local number = tonumber(self:GetText())
         if not number then 
             number = OpenRollsData.LootFramesOffset.horizontal
         end
         self:SetText(tostring(number))
-        self:GetParent():UpdateSampleFrame()
+        self:GetParent():UpdateData()
     end)
+    obj:SetWidth(35)
+    obj:SetPoint("CENTER")
+    obj:SetPoint("LEFT", title, "RIGHT", 10, 0)
     panel.Horizontal = obj
     
     subtitle = panel:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
     subtitle:SetPoint("TOPLEFT", title, "TOPRIGHT", 50, 0)
     subtitle:SetText("Vertical:")
 
-    obj = GUILib.InputBox(name .. "Vertical", panel)
-    obj:SetWidth(35)
-    obj:SetPoint("CENTER")
-    obj:SetPoint("LEFT", subtitle, "RIGHT", 10, 0)
-    obj:SetScript("OnEnterPressed", function(self) 
+    obj = GUILib.InputBox(name .. "Vertical", panel, function(self) 
         local number = tonumber(self:GetText())
         if not number then 
             number = OpenRollsData.LootFramesOffset.vertical
         end
         self:SetText(tostring(number))
-        self:GetParent():UpdateSampleFrame()
+        self:GetParent():UpdateData()
     end)
+    obj:SetWidth(35)
+    obj:SetPoint("CENTER")
+    obj:SetPoint("LEFT", subtitle, "RIGHT", 10, 0)
     panel.Vertical = obj
 
     local btn = function(self)
@@ -530,32 +563,62 @@ local function CreateLootFrameConfig(framename, name, parent)
                                  1, 1, 1, 1)
 
     panel.LoadData = function(self, Data)
-        self.Anchor:SetText(Data.LootFramesAnchor)
+        self.Anchor:SetText(Data.LootFramesAnchorFrame)
         self.LootFramePoint:SetSelected(Data.LootFramesAnchorFrom)
         self.AnchorPoint:SetSelected(Data.LootFramesAnchorTo)
         self.Horizontal:SetText(tostring(Data.LootFramesOffset.horizontal))
         self.Vertical:SetText(tostring(Data.LootFramesOffset.vertical))
-        self:UpdateSampleFrame()
+        self:UpdateData()
     end
-    panel:SetScript("OnShow", function(self) self:LoadData(OpenRollsData) end)
+    
+    panel:SetScript("OnShow", function(self) 
+        if not self.OriginalValues then
+            self.OriginalValues = {LootFramesAnchorFrame = OpenRollsData.LootFramesAnchorFrame,
+                                   LootFramesAnchorTo = OpenRollsData.LootFramesAnchorTo,
+                                   LootFramesAnchorFrom = OpenRollsData.LootFramesAnchorFrom,
+                                   LootFramesOffset = OpenRollsData.LootFramesOffset}
+            self:LoadData(OpenRollsData) 
+        end
+    end)
 
     panel:SetScript("OnHide", function(self)
-        sampleLootFrame:Hide()
         sampleNameFrame:Hide()
+        sampleLootFrame:Hide()
         sampleAnchor:Hide()
     end)
 
     panel.okay = function(self)
+        self:UpdateData()
+        self.OriginalValues = nil
+    end
+
+    panel.cancel = function(self)
         local Data = OpenRollsData
-        Data.LootFramesAnchor = self.Anchor:GetText()
-        Data.LootFramesAnchorFrom = self.LootFramePoint:GetSelected()
-        Data.LootFramesAnchorTo = self.AnchorPoint:GetSelected()
-        Data.LootFramesOffset = {horizontal = tonumber(self.Horizontal:GetText()),
-                                 vertical = tonumber(self.Vertical:GetText())}
+        for i, j in pairs(self.OriginalValues) do
+            Data[i] = j
+        end
         OpenRolls:RepositionLootWindows()
+        self.OriginalValues = nil
     end
     
     panel.default = function(self) self:LoadData(OpenRolls.Defaults) end
+
+    panel.UpdateData = function(self)
+        local Data = OpenRollsData
+        Data.LootFramesAnchorFrame = self.Anchor:GetText()
+        Data.LootFramesAnchorTo = self.AnchorPoint:GetSelected()
+        Data.LootFramesAnchorFrom = self.LootFramePoint:GetSelected()
+        Data.LootFramesOffset = {horizontal = tonumber(self.Horizontal:GetText()),
+                                 vertical = tonumber(self.Vertical:GetText())}
+        OpenRolls:RepositionLootWindows()
+        
+        sampleLootFrame:ClearAllPoints()
+        sampleLootFrame:SetPoint(Data.LootFramesAnchorFrom, 
+                                 sampleAnchor, 
+                                 Data.LootFramesAnchorTo,
+                                 Data.LootFramesOffset.horizontal,
+                                 Data.LootFramesOffset.vertical)
+    end
 
     panel.UpdateSampleFrame = function(self)
         local anchorPoint = self.AnchorPoint:GetSelected()

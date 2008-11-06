@@ -16,11 +16,11 @@ OpenRolls.Defaults = {
     RollMin = 1,
     RollMax = 100,
     LootFramesOffset = {horizontal = -68, vertical = -10},
-    LootFramesAnchor = "LootFrame",
+    LootFramesAnchorFrame = "LootFrame",
     LootFramesAnchorFrom = "TOPLEFT",
     LootFramesAnchorTo = "TOPRIGHT",
     NameFramesOffset = {horizontal = 61, vertical = -13},
-    NameFramesAnchor = "LootFrame",
+    NameFramesAnchorFrame = "LootFrame",
     NameFramesAnchorFrom = "BOTTOMLEFT",
     NameFramesAnchorTo = "TOPLEFT"
 }
@@ -215,7 +215,7 @@ function OpenRolls:OnInitialize()
     local Data = OpenRollsData
     NamesFrame.bankName:SetText(Data.Banker)
     NamesFrame.chantName:SetText(Data.Disenchanter)
-    local anchor = Data.NameFramesAnchor
+    local anchor = Data.NameFramesAnchorFrame
     local anchorFrom = Data.NameFramesAnchorFrom
     local anchorTo = Data.NameFramesAnchorTo
     local offset = Data.NameFramesOffset
@@ -393,7 +393,7 @@ function OpenRolls:RepositionLootWindows()
     if #lewt == 0 then return end
     lewt[1]:ClearAllPoints()
     local Data = OpenRollsData
-    local anchor = Data.LootFramesAnchor
+    local anchor = Data.LootFramesAnchorFrame
     local anchorTo = Data.LootFramesAnchorTo
     local anchorFrom = Data.LootFramesAnchorFrom
     local offset = Data.LootFramesOffset
@@ -404,7 +404,7 @@ function OpenRolls:RepositionLootWindows()
         lewt[i]:SetPoint("TOPLEFT", lewt[i-1], "BOTTOMLEFT")
     end
 
-    anchor = Data.NameFramesAnchor
+    anchor = Data.NameFramesAnchorFrame
     anchorTo = Data.NameFramesAnchorTo
     anchorFrom = Data.NameFramesAnchorFrom
     offset = Data.NameFramesOffset
@@ -502,7 +502,7 @@ function OpenRolls:LOOT_SLOT_CLEARED(event, slot)
         end
     end
     if pos ~= nil then table.remove(lewt, pos) end
-    RepositionLootWindows()
+    OpenRolls:RepositionLootWindows()
 end
 
 OpenRolls:RegisterEvent("LOOT_OPENED")
