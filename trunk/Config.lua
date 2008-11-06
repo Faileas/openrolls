@@ -673,7 +673,7 @@ end
 
 
 function OpenRolls:ShowConfig()
-    InterfaceOptionsFrame_OpenToCategory("Name Frame")
+    InterfaceOptionsFrame_OpenToCategory("Open Rolls")
 end
 
 function OpenRolls:CreateConfig()
