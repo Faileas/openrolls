@@ -81,7 +81,7 @@ local function CreateMainConfig(name)
     SubDurationString:SetPoint("LEFT", SubDuration, "RIGHT")
     SubDurationString:SetText("Length of spammed countdown")
 
-    ConfigPanel:SetScript("OnShow", function(self, ...)
+    ConfigPanel.LoadData = function()
         local Data = OpenRollsData
         WhenShowBox:Click(Data.ShowLootWindows)
         RemindBox:SetChecked(Data.ShowSummaryWhenRollsOver)
@@ -89,6 +89,21 @@ local function CreateMainConfig(name)
         WarningBox:SetChecked(Data.Warning)
         MainDuration:SetText(Data.SilentTime)
         SubDuration:SetText(Data.CountdownTime)
+    end
+    
+    ConfigPanel:SetScript("OnShow", function(self, ...)
+        if not ConfigPanel.OriginalValues then
+            ConfigPanel.LoadData()
+            local Data = OpenRollsData
+            ConfigPanel.OriginalValues = {
+                ShowLootWindows = Data.ShowLootWindows,
+                ShowSummaryWhenRollsOver = Data.ShowSummaryWhenRollsOver,
+                ConfirmBeforeLooting = Data.ConfirmBeforeLooting,
+                Warning = Data.Warning,
+                SilentTime = Data.SilentTime,
+                CountdownTime = Data.CountdownTime
+            }
+        end
     end)
 
     ConfigPanel.name = "Open Rolls"
@@ -100,6 +115,28 @@ local function CreateMainConfig(name)
         Data.Warning = not not WarningBox:GetChecked()
         Data.SilentTime = tonumber(MainDuration:GetText())
         Data.CountdownTime = tonumber(SubDuration:GetText()) 
+        
+        ConfigPanel.OriginalValues = nil
+    end
+    
+    ConfigPanel.default = function()
+        local Data = OpenRollsData
+        Data.ShowSummaryWhenRollsOver = nil
+        Data.ShowLootWindows = nil
+        Data.ConfirmBeforeLooting = nil
+        Data.Warning = nil
+        Data.SilentTime = nil
+        Data.CountdownTime = nil
+        
+        ConfigPanel.LoadData()
+    end
+    
+    ConfigPanel.cancel = function()
+        local Data = OpenRollsData
+        for i,j in pairs(ConfigPanel.OriginalValues) do
+            Data[i] = j
+        end
+        ConfigPanel.OriginalValues = nil
     end
     
     return ConfigPanel
