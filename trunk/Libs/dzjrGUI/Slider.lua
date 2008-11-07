@@ -1,10 +1,13 @@
 do
 local Lib = LibStub("dzjrGUI")
 
-local Frame = CreateFrame("frame")
+--[[local Frame = CreateFrame("frame")
 Frame.__index = Frame
 
 Lib.Slider = setmetatable({}, Frame)
+Lib.Slider.__index = Lib.Slider]]--
+
+Lib.Slider = setmetatable({}, Lib.Base["frame"])
 Lib.Slider.__index = Lib.Slider
 
 function Lib.Slider:AddMouseoverText(text, r, g, b, a)

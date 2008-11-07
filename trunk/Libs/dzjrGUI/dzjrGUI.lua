@@ -5,7 +5,20 @@ local Lib = LibStub:NewLibrary(MAJOR, MINOR)
 
 if not Lib then return end
 
-function Lib.AddMouseoverText(frame, text, r, g, b, a)
+local setmetatable = setmetatable
+local pcall = pcall
+local rawset = rawset
+local type = type
+
+--[[
+local Frame = CreateFrame("frame")
+Frame.__index = Frame
+
+Lib.Slider = setmetatable({}, Frame)
+Lib.Slider.__index = Lib.Slider
+]]--
+
+local function myAddMouseverText(frame, text, r, g, b, a)
     frame:EnableMouse()
     local oldEnter = frame:GetScript("OnEnter")
     local oldLeave = frame:GetScript("OnLeave")
@@ -20,6 +33,31 @@ function Lib.AddMouseoverText(frame, text, r, g, b, a)
         GameTooltip:Hide() 
         if oldLeave then oldLeave() end
     end)
+end
+
+local function CreateBase(tbl, base)
+    local ok, baseFrame = pcall(CreateFrame, base)
+    if not ok then return end
+    
+    baseFrame.__index = baseFrame
+    
+    local myFrame = setmetatable({}, baseFrame)
+    myFrame.__index = myFrame    
+    myFrame.AddMouseoverText = myAddMouseverText
+    
+    rawset(tbl, base, myFrame)
+    return myFrame
+end
+
+Lib.Base = setmetatable({}, {__index = CreateBase})
+
+
+function Lib.AddMouseoverText(frame, text, r, g, b, a)
+    if type(frame.AddMouseoverText) == "function" then
+        frame:AddMouseoverText(text, r, g, b, a)
+    else
+        myAddMouseverText(frame, text, r, g, b, a)
+    end
 end
 
 end
