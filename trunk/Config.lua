@@ -231,9 +231,9 @@ local function CreateNameFrameConfig(framename, name, parent)
                      "anchoring to this object will give the name frame a static location that " ..
                      "will not move under normal circumstances.")
 
-    local obj = GUILib.InputBox(name .. "Anchor", panel, function(self)
+    local obj = GUILib.InputBox(function(self)
         self:GetParent():UpdateData()
-    end)
+    end, name .. "Anchor", panel)
     obj:SetWidth(200)
     obj:SetPoint("TOPLEFT", subtitle, "BOTTOMLEFT", 3, -8)
     panel.Anchor = obj
@@ -318,14 +318,14 @@ local function CreateNameFrameConfig(framename, name, parent)
     title:SetPoint("TOPLEFT", subtitle, "BOTTOMLEFT", 0, -8)
     title:SetText("Horizontal:")
     
-    obj = GUILib.InputBox(name .. "Horizontal", panel, function(self) 
+    obj = GUILib.InputBox(function(self) 
         local number = tonumber(self:GetText())
         if not number then 
             number = OpenRollsData.NameFramesOffset.horizontal
         end
         self:SetText(tostring(number))
         self:GetParent():UpdateData()
-    end)
+    end, name .. "Horizontal", panel)
     obj:SetWidth(35)
     obj:SetPoint("CENTER")
     obj:SetPoint("LEFT", title, "RIGHT", 10, 0)
@@ -335,14 +335,14 @@ local function CreateNameFrameConfig(framename, name, parent)
     subtitle:SetPoint("TOPLEFT", title, "TOPRIGHT", 50, 0)
     subtitle:SetText("Vertical:")
 
-    obj = GUILib.InputBox(name .. "Vertical", panel, function(self) 
+    obj = GUILib.InputBox(function(self) 
         local number = tonumber(self:GetText())
         if not number then 
             number = OpenRollsData.NameFramesOffset.vertical
         end
         self:SetText(tostring(number))
         self:GetParent():UpdateData()
-    end)
+    end, name .. "Vertical", panel)
     obj:SetWidth(35)
     obj:SetPoint("CENTER")
     obj:SetPoint("LEFT", subtitle, "RIGHT", 10, 0)
@@ -472,9 +472,9 @@ local function CreateLootFrameConfig(framename, name, parent)
                      "object will give the item frame a static location that will " ..
                      "not move under normal circumstances.")
 
-    local obj = GUILib.InputBox(name .. "Anchor", panel, function(self)
+    local obj = GUILib.InputBox(function(self)
         self:GetParent():UpdateData()
-    end)
+    end, name .. "Anchor", panel)
     obj:SetWidth(200)
     obj:SetPoint("TOPLEFT", subtitle, "BOTTOMLEFT", 3, -8)
     panel.Anchor = obj
@@ -556,14 +556,14 @@ local function CreateLootFrameConfig(framename, name, parent)
     title:SetPoint("TOPLEFT", subtitle, "BOTTOMLEFT", 0, -8)
     title:SetText("Horizontal:")
     
-    obj = GUILib.InputBox(name .. "Horizontal", panel, function(self) 
+    obj = GUILib.InputBox(function(self) 
         local number = tonumber(self:GetText())
         if not number then 
             number = OpenRollsData.LootFramesOffset.horizontal
         end
         self:SetText(tostring(number))
         self:GetParent():UpdateData()
-    end)
+    end, name .. "Horizontal", panel)
     obj:SetWidth(35)
     obj:SetPoint("CENTER")
     obj:SetPoint("LEFT", title, "RIGHT", 10, 0)
@@ -573,14 +573,14 @@ local function CreateLootFrameConfig(framename, name, parent)
     subtitle:SetPoint("TOPLEFT", title, "TOPRIGHT", 50, 0)
     subtitle:SetText("Vertical:")
 
-    obj = GUILib.InputBox(name .. "Vertical", panel, function(self) 
+    obj = GUILib.InputBox(function(self) 
         local number = tonumber(self:GetText())
         if not number then 
             number = OpenRollsData.LootFramesOffset.vertical
         end
         self:SetText(tostring(number))
         self:GetParent():UpdateData()
-    end)
+    end, name .. "Vertical", panel)
     obj:SetWidth(35)
     obj:SetPoint("CENTER")
     obj:SetPoint("LEFT", subtitle, "RIGHT", 10, 0)
