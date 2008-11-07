@@ -9,14 +9,7 @@ local setmetatable = setmetatable
 local pcall = pcall
 local rawset = rawset
 local type = type
-
---[[
-local Frame = CreateFrame("frame")
-Frame.__index = Frame
-
-Lib.Slider = setmetatable({}, Frame)
-Lib.Slider.__index = Lib.Slider
-]]--
+local strlower = strlower
 
 local function myAddMouseverText(frame, text, r, g, b, a)
     frame:EnableMouse()
@@ -36,7 +29,7 @@ local function myAddMouseverText(frame, text, r, g, b, a)
 end
 
 local function CreateBase(tbl, base)
-    local ok, baseFrame = pcall(CreateFrame, base)
+    local ok, baseFrame = pcall(CreateFrame, strlower(base))
     if not ok then return end
     
     baseFrame.__index = baseFrame
