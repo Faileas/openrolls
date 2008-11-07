@@ -15,7 +15,7 @@ local function CreateMainConfig(name)
     WhenShowString:SetPoint("TOPLEFT", ConfigPanel, "TOPLEFT", 6, -6)
     WhenShowString:SetText("When should loot windows display?")
         
-    local WhenShowBox = GUILib.RadioGroup:new({always = "Always", 
+    local WhenShowBox = GUILib.RadioGroup({always = "Always", 
                                           whenML = "When Masterlooter", 
                                           never = "Never"}, 
                                         name .. "WhenShow", 
@@ -138,12 +138,7 @@ local function CreateMainConfig(name)
         end
         ConfigPanel.OriginalValues = nil
     end
-
-    local obj = GUILib.Slider:new("horizontal", 0, 100, 1, "OpenRollsConfigSlider", ConfigPanel)
-    obj:SetWidth(100)
-    obj:SetPoint("BOTTOMLEFT", 20, 20)
-    GUILib.AddMouseoverText(obj, "???")
-
+    
     return ConfigPanel
 end
 
@@ -236,8 +231,9 @@ local function CreateNameFrameConfig(framename, name, parent)
                      "anchoring to this object will give the name frame a static location that " ..
                      "will not move under normal circumstances.")
 
-    local obj = GUILib.InputBox:new(function(self) self:GetParent():UpdateData() end, 
-                                    name .. "Anchor", panel)
+    local obj = GUILib.InputBox(function(self)
+        self:GetParent():UpdateData()
+    end, name .. "Anchor", panel)
     obj:SetWidth(200)
     obj:SetPoint("TOPLEFT", subtitle, "BOTTOMLEFT", 3, -8)
     panel.Anchor = obj
@@ -260,7 +256,7 @@ local function CreateNameFrameConfig(framename, name, parent)
     local factory = function(str) return function() 
         panel:UpdateData()
     end end
-    obj = GUILib.DropdownMenu:new({["TOPLEFT"] = factory("TOPLEFT"), 
+    obj = GUILib.DropdownMenu({["TOPLEFT"] = factory("TOPLEFT"), 
                                ["TOPRIGHT"] = factory("TOPRIGHT"), 
                                ["BOTTOMLEFT"] = factory("BOTTOMLEFT"),
                                ["BOTTOMRIGHT"] = factory("BOTTOMRIGHT"),
@@ -283,7 +279,7 @@ local function CreateNameFrameConfig(framename, name, parent)
     factory = function(str) return function() 
         panel:UpdateData()
     end end
-    obj = GUILib.DropdownMenu:new({["TOPLEFT"] = factory("TOPLEFT"), 
+    obj = GUILib.DropdownMenu({["TOPLEFT"] = factory("TOPLEFT"), 
                                ["TOPRIGHT"] = factory("TOPRIGHT"), 
                                ["BOTTOMLEFT"] = factory("BOTTOMLEFT"),
                                ["BOTTOMRIGHT"] = factory("BOTTOMRIGHT"),
@@ -322,7 +318,7 @@ local function CreateNameFrameConfig(framename, name, parent)
     title:SetPoint("TOPLEFT", subtitle, "BOTTOMLEFT", 0, -8)
     title:SetText("Horizontal:")
     
-    obj = GUILib.InputBox:new(function(self) 
+    obj = GUILib.InputBox(function(self) 
         local number = tonumber(self:GetText())
         if not number then 
             number = OpenRollsData.NameFramesOffset.horizontal
@@ -339,7 +335,7 @@ local function CreateNameFrameConfig(framename, name, parent)
     subtitle:SetPoint("TOPLEFT", title, "TOPRIGHT", 50, 0)
     subtitle:SetText("Vertical:")
 
-    obj = GUILib.InputBox:new(function(self) 
+    obj = GUILib.InputBox(function(self) 
         local number = tonumber(self:GetText())
         if not number then 
             number = OpenRollsData.NameFramesOffset.vertical
@@ -358,11 +354,12 @@ local function CreateNameFrameConfig(framename, name, parent)
         sampleNameFrame:Show()
     end
 
-    obj = GUILib.Button:new("Show", btn, name .. "Show", panel)
+    obj = GUILib.Button("Show", btn, name .. "Show", panel)
     obj:SetPoint("CENTER")
     obj:SetPoint("BOTTOM", 0, 10)
-    obj:AddMouseoverText("Shows a sample anchor and name frame.  Use as a " ..
-                         "reference; the actual placement may not match.", 1, 1, 1, 1)
+    GUILib.AddMouseoverText(obj, "Shows a sample anchor and name frame.  Use as a " ..
+                                 "reference; the actual placement may not match.",
+                                 1, 1, 1, 1)
 
     panel.LoadData = function(self, Data)
         self.Anchor:SetText(Data.NameFramesAnchorFrame)
@@ -475,7 +472,7 @@ local function CreateLootFrameConfig(framename, name, parent)
                      "object will give the item frame a static location that will " ..
                      "not move under normal circumstances.")
 
-    local obj = GUILib.InputBox:new(function(self)
+    local obj = GUILib.InputBox(function(self)
         self:GetParent():UpdateData()
     end, name .. "Anchor", panel)
     obj:SetWidth(200)
@@ -500,7 +497,7 @@ local function CreateLootFrameConfig(framename, name, parent)
     local factory = function(str) return function() 
         panel:UpdateData()
     end end
-    obj = GUILib.DropdownMenu:new({["TOPLEFT"] = factory("TOPLEFT"), 
+    obj = GUILib.DropdownMenu({["TOPLEFT"] = factory("TOPLEFT"), 
                                ["TOPRIGHT"] = factory("TOPRIGHT"), 
                                ["BOTTOMLEFT"] = factory("BOTTOMLEFT"),
                                ["BOTTOMRIGHT"] = factory("BOTTOMRIGHT"),
@@ -520,7 +517,7 @@ local function CreateLootFrameConfig(framename, name, parent)
     subtitle:SetJustifyH("CENTER")
     subtitle:SetText("Item Frame Point")
 
-    obj = GUILib.DropdownMenu:new({["TOPLEFT"] = factory("TOPLEFT"), 
+    obj = GUILib.DropdownMenu({["TOPLEFT"] = factory("TOPLEFT"), 
                                ["TOPRIGHT"] = factory("TOPRIGHT"), 
                                ["BOTTOMLEFT"] = factory("BOTTOMLEFT"),
                                ["BOTTOMRIGHT"] = factory("BOTTOMRIGHT"),
@@ -559,7 +556,7 @@ local function CreateLootFrameConfig(framename, name, parent)
     title:SetPoint("TOPLEFT", subtitle, "BOTTOMLEFT", 0, -8)
     title:SetText("Horizontal:")
     
-    obj = GUILib.InputBox:new(function(self) 
+    obj = GUILib.InputBox(function(self) 
         local number = tonumber(self:GetText())
         if not number then 
             number = OpenRollsData.LootFramesOffset.horizontal
@@ -576,7 +573,7 @@ local function CreateLootFrameConfig(framename, name, parent)
     subtitle:SetPoint("TOPLEFT", title, "TOPRIGHT", 50, 0)
     subtitle:SetText("Vertical:")
 
-    obj = GUILib.InputBox:new(function(self) 
+    obj = GUILib.InputBox(function(self) 
         local number = tonumber(self:GetText())
         if not number then 
             number = OpenRollsData.LootFramesOffset.vertical
@@ -595,11 +592,12 @@ local function CreateLootFrameConfig(framename, name, parent)
         sampleNameFrame:Show()
     end
 
-    obj = GUILib.Button:new("Show", btn, name .. "Show", panel)
+    obj = GUILib.Button("Show", btn, name .. "Show", panel)
     obj:SetPoint("CENTER")
     obj:SetPoint("BOTTOM", 0, 10)
-    obj:AddMouseoverText("Shows a sample anchor and item frame.  Use as a " ..
-                         "reference; the actual placement may not match.", 1, 1, 1, 1)
+    GUILib.AddMouseoverText(obj, "Shows a sample anchor and item frame.  Use as a " ..
+                                 "reference; the actual placement may not match.",
+                                 1, 1, 1, 1)
 
     panel.LoadData = function(self, Data)
         self.Anchor:SetText(Data.LootFramesAnchorFrame)
