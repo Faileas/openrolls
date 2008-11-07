@@ -2,7 +2,7 @@ do
 local Lib = LibStub("dzjrGUI")
 
 --Creates an input box.  The resultant box has a height set, but no width
-function Lib.InputBox(name, parent, func)
+function Lib.InputBox(func, name, parent)
     local obj = CreateFrame("EditBox", name, parent, "InputBoxTemplate")
     obj:SetAutoFocus(false)
     obj:SetFontObject(ChatFontNormal)
