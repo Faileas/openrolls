@@ -1,8 +1,13 @@
 do
 local Lib = LibStub("dzjrGUI")
 
-function Lib.Button(text, func, name, parent)
+Lib.Button = setmetatable({}, Lib.Base["button"])
+Lib.Button.__index = Lib.Button
+
+function Lib.Button:new(text, func, name, parent)
     local frame = CreateFrame("button", name .. "Button", parent)
+    frame = setmetatable(frame, Lib.Button)
+    
     frame:SetText(text)
     frame:SetWidth(80)
     frame:SetHeight(22)

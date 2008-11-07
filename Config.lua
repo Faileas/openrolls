@@ -138,7 +138,12 @@ local function CreateMainConfig(name)
         end
         ConfigPanel.OriginalValues = nil
     end
-    
+
+    local obj = GUILib.Slider:new("horizontal", 0, 100, 1, "OpenRollsConfigSlider", ConfigPanel)
+    obj:SetWidth(100)
+    obj:SetPoint("BOTTOMLEFT", 20, 20)
+    GUILib.AddMouseoverText(obj, "???")
+
     return ConfigPanel
 end
 
@@ -354,12 +359,11 @@ local function CreateNameFrameConfig(framename, name, parent)
         sampleNameFrame:Show()
     end
 
-    obj = GUILib.Button("Show", btn, name .. "Show", panel)
+    obj = GUILib.Button:new("Show", btn, name .. "Show", panel)
     obj:SetPoint("CENTER")
     obj:SetPoint("BOTTOM", 0, 10)
-    GUILib.AddMouseoverText(obj, "Shows a sample anchor and name frame.  Use as a " ..
-                                 "reference; the actual placement may not match.",
-                                 1, 1, 1, 1)
+    obj:AddMouseoverText("Shows a sample anchor and name frame.  Use as a " ..
+                         "reference; the actual placement may not match.", 1, 1, 1, 1)
 
     panel.LoadData = function(self, Data)
         self.Anchor:SetText(Data.NameFramesAnchorFrame)
@@ -592,12 +596,11 @@ local function CreateLootFrameConfig(framename, name, parent)
         sampleNameFrame:Show()
     end
 
-    obj = GUILib.Button("Show", btn, name .. "Show", panel)
+    obj = GUILib.Button:new("Show", btn, name .. "Show", panel)
     obj:SetPoint("CENTER")
     obj:SetPoint("BOTTOM", 0, 10)
-    GUILib.AddMouseoverText(obj, "Shows a sample anchor and item frame.  Use as a " ..
-                                 "reference; the actual placement may not match.",
-                                 1, 1, 1, 1)
+    obj:AddMouseoverText("Shows a sample anchor and item frame.  Use as a " ..
+                         "reference; the actual placement may not match.", 1, 1, 1, 1)
 
     panel.LoadData = function(self, Data)
         self.Anchor:SetText(Data.LootFramesAnchorFrame)
