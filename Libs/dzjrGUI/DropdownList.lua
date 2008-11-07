@@ -1,9 +1,6 @@
 do
 local Lib = LibStub("dzjrGUI")
 
-Lib.DropdownMenu = setmetatable({}, Lib.Base["Frame"])
-Lib.DropdownMenu.__index = Lib.DropdownMenu
-
 local function CreateMenu(self, name, options, func)
     local menu = CreateFrame("Frame", name .. "Menu", self, "UIDropDownMenuTemplate")
     --menu.displayMode = "MENU"
@@ -27,8 +24,8 @@ local function CreateMenu(self, name, options, func)
 end
 
 --Creates a dropdown menu
-function Lib.DropdownMenu:new(options, name, parent)
-	local frame = setmetatable(CreateFrame("Frame", name, parent), Lib.DropdownMenu)
+function Lib.DropdownMenu(options, name, parent)
+	local frame = CreateFrame("Frame", name, parent)
     frame:SetHeight(26)
 
     local left = frame:CreateTexture(name.."Left", "ARTWORK")
