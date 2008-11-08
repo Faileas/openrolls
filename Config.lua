@@ -16,10 +16,8 @@ local function CreateMainConfig(name)
     WhenShowString:SetText("When should loot windows display?")
         
     local WhenShowBox = GUILib.RadioGroup:new({always = "Always", 
-                                          whenML = "When Masterlooter", 
-                                          never = "Never"}, 
-                                        name .. "WhenShow", 
-                                        ConfigPanel)
+                                               whenML = "When Masterlooter", 
+                                               never = "Never"}, name .. "WhenShow", ConfigPanel)
     WhenShowBox:SetPoint("TOPLEFT", WhenShowString, "BOTTOMLEFT", 20, -6)
     WhenShowBox:Click('whenML')
 
@@ -139,10 +137,8 @@ local function CreateMainConfig(name)
         ConfigPanel.OriginalValues = nil
     end
 
-    local obj = GUILib.Slider:new("horizontal", 0, 100, 1, "OpenRollsConfigSlider", ConfigPanel)
-    obj:SetWidth(100)
-    obj:SetPoint("BOTTOMLEFT", 20, 20)
-    GUILib.AddMouseoverText(obj, "???")
+    --local obj = GUILib.CheckButton:new("blah", "OpenRollsConfigSlider", ConfigPanel)
+    --obj:SetPoint("BOTTOMLEFT", 20, 20)
 
     return ConfigPanel
 end
