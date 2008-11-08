@@ -1,11 +1,10 @@
 do
 local Lib = LibStub("dzjrGUI")
 
---[[local Frame = CreateFrame("frame")
-Frame.__index = Frame
-
-Lib.Slider = setmetatable({}, Frame)
-Lib.Slider.__index = Lib.Slider]]--
+local setmetatable = setmetatable
+local tostring = tostring
+local error = error
+local CreateFrame = CreateFrame
 
 Lib.Slider = setmetatable({}, Lib.Base["frame"])
 Lib.Slider.__index = Lib.Slider
@@ -74,10 +73,13 @@ end
 
 function Lib.Slider:SetOrientation(orientation)
     local horizontal
-    if orientation:lower() == "horizontal" then
+    orientation = orientation:lower()
+    if orientation == "horizontal" then
         horizontal = true
-    else
+    elseif orientation == "vertical" then
         horizontal = false
+    else
+        error("Unknown orientation: " .. orientation)
     end
 
     local slider = self.Slider
@@ -117,7 +119,7 @@ function Lib.Slider:new(orientation, min, max, step, name, parent)
     local self = CreateFrame("Frame", name, parent)
     self = setmetatable(self, Lib.Slider)
 
-    local slider = CreateFrame("Slider", name .. "Slider", self)
+    local slider = CreateFrame("Slider", nil, self)
     slider:SetBackdrop({
         bgFile = "Interface\\Buttons\\UI-SliderBar-Background",
         edgeFile = "Interface\\Buttons\\UI-SliderBar-Border",
