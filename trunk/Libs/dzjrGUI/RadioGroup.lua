@@ -4,6 +4,22 @@ local Lib = LibStub("dzjrGUI")
 Lib.RadioGroup = setmetatable({}, Lib.Base["Frame"])
 Lib.RadioGroup.__index = Lib.RadioGroup
 
+function Lib.RadioGroup:Click(position)
+    if position ~= self.checked then
+        self.radio[self.checked].button:SetChecked(false)
+        self.checked = position
+    end
+    self.radio[position].button:SetChecked(true)
+end
+
+function Lib.RadioGroup:GetSetting()
+    return frame.checked
+end
+
+local function RadioClick(self)
+    self:GetParent():Click(self.position)
+end
+
 --Builds a series of radio buttons on top of each other
 --name and parent are self explanatory
 --options is a table with each element corresponding to a button
@@ -17,19 +33,16 @@ function Lib.RadioGroup:new(options, name, parent)
     local max, cur = 0, 0
     local height = 0
     for pos, j in pairs(options) do
-        local r = CreateFrame("CheckButton", name .. "Radio" .. i, frame, "UIRadioButtonTemplate")
-        r:SetPoint("TOPLEFT", frame, "TOPLEFT", 0, -i*20)
-        r.parent = frame
+        local r = Lib.CheckButton:new("radio", nil, frame)
+        r:SetPoint("TOPLEFT", 0, -i*20)
         r.position = pos
-        r:SetScript("OnClick", function(self, ...)
-            self.parent:Click(self.position)
-        end)
+        r:SetScript("OnClick", RadioClick)
         if init == nil then 
             init = pos
             r:SetChecked(true)
         end
 
-        local s = frame:CreateFontString(name .. "RadioString" .. i, "OVERLAY", "GameFontHighlight")
+        local s = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
         s:SetPoint("TOPLEFT", r, "TOPRIGHT")
         s:SetText(j)
 
@@ -39,18 +52,6 @@ function Lib.RadioGroup:new(options, name, parent)
 
         radio[pos] = {button = r, text = s}
         i = i + 1
-    end
-
-    frame.Click = function(self, position)
-        if position ~= self.checked then
-            self.radio[self.checked].button:SetChecked(false)
-            self.checked = position
-        end
-        self.radio[position].button:SetChecked(true)
-    end
-
-    frame.GetSetting = function(self)
-        return frame.checked
     end
 
     frame:SetWidth(max)
