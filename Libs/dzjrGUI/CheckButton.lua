@@ -1,11 +1,15 @@
 do
 local Lib = LibStub("dzjrGUI")
 
+local setmetatable = setmetatable
+local error = error
+local CreateFrame = CreateFrame
+
 Lib.CheckButton = setmetatable({}, Lib.Base["CheckButton"])
 Lib.CheckButton.__index = Lib.CheckButton
 
 function Lib.CheckButton:new(typeof, name, parent)
-    typeof = strlower(typeof)
+    typeof = typeof:lower()
     local frame = setmetatable(CreateFrame("CheckButton", name, parent), Lib.CheckButton)
 
     frame:SetWidth(16)

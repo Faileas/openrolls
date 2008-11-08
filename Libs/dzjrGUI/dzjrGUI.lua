@@ -9,7 +9,7 @@ local setmetatable = setmetatable
 local pcall = pcall
 local rawset = rawset
 local type = type
-local strlower = strlower
+local CreateFrame = CreateFrame
 
 local function myAddMouseverText(frame, text, r, g, b, a)
     frame:EnableMouse()
@@ -29,11 +29,10 @@ local function myAddMouseverText(frame, text, r, g, b, a)
 end
 
 local function CreateBase(tbl, base)
-    base = strlower(base)
     local ok, baseFrame = pcall(CreateFrame, base)
     if not ok then return end
     
-    if base == "editbox" then
+    if base:lower() == "editbox" then
         baseFrame:SetAutoFocus(false)
     end
     

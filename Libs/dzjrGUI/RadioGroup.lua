@@ -1,6 +1,10 @@
 do
 local Lib = LibStub("dzjrGUI")
 
+local setmetatable = setmetatable
+local pairs = pairs
+local CreateFrame = CreateFrame
+
 Lib.RadioGroup = setmetatable({}, Lib.Base["Frame"])
 Lib.RadioGroup.__index = Lib.RadioGroup
 

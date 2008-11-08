@@ -137,8 +137,10 @@ local function CreateMainConfig(name)
         ConfigPanel.OriginalValues = nil
     end
 
-    --local obj = GUILib.CheckButton:new("blah", "OpenRollsConfigSlider", ConfigPanel)
-    --obj:SetPoint("BOTTOMLEFT", 20, 20)
+    local obj = GUILib.Slider:new("Horizontal", 0, 100, 1, nil, ConfigPanel)
+    obj:SetPoint("BOTTOMLEFT", 20, 20)
+    obj:SetWidth(100)
+    local print = function(str) ChatFrame1:AddMessage(str) end
 
     return ConfigPanel
 end
@@ -151,8 +153,7 @@ local backdrop = {bgFile="Interface/Tooltips/UI-Tooltip-Background",
                   edgeFile=nil,  
                   tile = true, 
                   tileSize = 32, 
-                  edgeSize = 32,  
-                  insets = { left = 8, right = 8, top = 8, bottom = 8 }}
+                  edgeSize = 32}
 
 local frame = CreateFrame("frame", "OpenRollConfigSampleName", UIParent)
 frame:SetBackdrop(backdrop) 
@@ -182,7 +183,7 @@ sampleLootFrame = frame
 
 frame = CreateFrame("frame", "OpenRollConfigSampleAnchor", UIParent)
 frame:SetBackdrop(backdrop) 
-frame:SetBackdropColor(0,1,0,1) 
+frame:SetBackdropColor(0,1,0,0.5) 
 frame:SetToplevel(true) 
 frame:SetFrameStrata("FULLSCREEN_DIALOG")  
 frame:SetWidth(200) 
@@ -256,7 +257,7 @@ local function CreateNameFrameConfig(framename, name, parent)
     local factory = function(str) return function() 
         panel:UpdateData()
     end end
-    obj = GUILib.DropdownMenu:new({["TOPLEFT"] = factory("TOPLEFT"), 
+    obj = GUILib.DropdownList:new({["TOPLEFT"] = factory("TOPLEFT"), 
                                ["TOPRIGHT"] = factory("TOPRIGHT"), 
                                ["BOTTOMLEFT"] = factory("BOTTOMLEFT"),
                                ["BOTTOMRIGHT"] = factory("BOTTOMRIGHT"),
@@ -279,7 +280,7 @@ local function CreateNameFrameConfig(framename, name, parent)
     factory = function(str) return function() 
         panel:UpdateData()
     end end
-    obj = GUILib.DropdownMenu:new({["TOPLEFT"] = factory("TOPLEFT"), 
+    obj = GUILib.DropdownList:new({["TOPLEFT"] = factory("TOPLEFT"), 
                                ["TOPRIGHT"] = factory("TOPRIGHT"), 
                                ["BOTTOMLEFT"] = factory("BOTTOMLEFT"),
                                ["BOTTOMRIGHT"] = factory("BOTTOMRIGHT"),
@@ -496,7 +497,7 @@ local function CreateLootFrameConfig(framename, name, parent)
     local factory = function(str) return function() 
         panel:UpdateData()
     end end
-    obj = GUILib.DropdownMenu:new({["TOPLEFT"] = factory("TOPLEFT"), 
+    obj = GUILib.DropdownList:new({["TOPLEFT"] = factory("TOPLEFT"), 
                                ["TOPRIGHT"] = factory("TOPRIGHT"), 
                                ["BOTTOMLEFT"] = factory("BOTTOMLEFT"),
                                ["BOTTOMRIGHT"] = factory("BOTTOMRIGHT"),
@@ -516,7 +517,7 @@ local function CreateLootFrameConfig(framename, name, parent)
     subtitle:SetJustifyH("CENTER")
     subtitle:SetText("Item Frame Point")
 
-    obj = GUILib.DropdownMenu:new({["TOPLEFT"] = factory("TOPLEFT"), 
+    obj = GUILib.DropdownList:new({["TOPLEFT"] = factory("TOPLEFT"), 
                                ["TOPRIGHT"] = factory("TOPRIGHT"), 
                                ["BOTTOMLEFT"] = factory("BOTTOMLEFT"),
                                ["BOTTOMRIGHT"] = factory("BOTTOMRIGHT"),

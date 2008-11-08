@@ -1,6 +1,9 @@
 do
 local Lib = LibStub("dzjrGUI")
 
+local setmetatable = setmetatable
+local CreateFrame = CreateFrame
+
 Lib.InputBox = setmetatable({}, Lib.Base["EditBox"])
 Lib.InputBox.__index = Lib.InputBox
 
