@@ -4,6 +4,17 @@ OpenRolls = LibStub("AceAddon-3.0"):NewAddon("OpenRolls",
 --I think this can be removed?  I really shouldn't have included a library I wrote as an expriment ><
 local Group = LibStub("GroupLib-1.0")
 
+local GUI = LibStub("dzjrGUI")
+
+function OpenRolls:TestTest()
+    local attributes = {
+        ConfirmFunction = function(self) ChatFrame1:AddMessage("yes") end,
+        CancelFunction = function(self) ChatFrame1:AddMessage("no") end,
+        Text = "Text"
+    }
+    GUI.MessageBox:new("Text", function() ChatFrame1:AddMessage("yes") end, "MyName")
+end
+
 OpenRolls.Defaults = {
     ShowSummaryWhenRollsOver = true,
     ShowLootWindows = "whenML",
@@ -320,9 +331,9 @@ function OpenRolls:DistributeItemByName(player, window, followup)
         if GetMasterLootCandidate(i) == player then
             if OpenRollsData.ConfirmBeforeLooting == true then
                 local str = "Do you wish to award " .. item .. " to " .. player .. "?"
-                OpenRolls:CreateMessageBox(str, function() GiveMasterLoot(slot, i) 
-                                                           followup(window, player)
-                                                end, function() end)
+                GUI.MessageBox:new(str, function() GiveMasterLoot(slot, i) 
+                                            followup(window, player)
+                                        end, function() end)
             else
                 GiveMasterLoot(slot, i)
                 followup(window, player)
