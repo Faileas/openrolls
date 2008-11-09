@@ -137,11 +137,6 @@ local function CreateMainConfig(name)
         ConfigPanel.OriginalValues = nil
     end
 
-    local obj = GUILib.Slider:new("Horizontal", 0, 100, 1, nil, ConfigPanel)
-    obj:SetPoint("BOTTOMLEFT", 20, 20)
-    obj:SetWidth(100)
-    local print = function(str) ChatFrame1:AddMessage(str) end
-
     return ConfigPanel
 end
 
