@@ -6,15 +6,6 @@ local Group = LibStub("GroupLib-1.0")
 
 local GUI = LibStub("dzjrGUI")
 
-function OpenRolls:TestTest()
-    local attributes = {
-        ConfirmFunction = function(self) ChatFrame1:AddMessage("yes") end,
-        CancelFunction = function(self) ChatFrame1:AddMessage("no") end,
-        Text = "Text"
-    }
-    GUI.MessageBox:new("Text", function() ChatFrame1:AddMessage("yes") end, "MyName")
-end
-
 OpenRolls.Defaults = {
     ShowSummaryWhenRollsOver = true,
     ShowLootWindows = "whenML",

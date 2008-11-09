@@ -103,14 +103,14 @@ function Lib.MessageBox:new(...)
     box:SetWidth(attributes.Width)
 
     local str = box:CreateFontString(nil, "ARTWORK", attributes.Font)
-    str:SetPoint("TOPLEFT", box, 12, -12)
-    str:SetWidth(box:GetRight() - box:GetLeft() - 24)
+    str:SetPoint("TOPLEFT", box, 17, -17)
+    str:SetWidth(box:GetRight() - box:GetLeft() - 34)
     str:SetText(attributes.Text)
     
     if attributes.Height then
         box:SetHeight(attributes.Height)
     else
-        box:SetHeight(str:GetHeight() + 50)
+        box:SetHeight(str:GetHeight() + 50 + 10)
     end
     
     box:Show()
