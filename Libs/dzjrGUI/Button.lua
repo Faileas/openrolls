@@ -12,7 +12,6 @@ function Lib.Button:new(text, func, name, parent)
     frame = setmetatable(frame, Lib.Button)
     
     frame:SetText(text)
-    frame:SetWidth(80)
     frame:SetHeight(22)
     frame:SetScript("OnClick", func)
     
@@ -31,6 +30,7 @@ function Lib.Button:new(text, func, name, parent)
     frame:GetDisabledTexture():SetTexCoord(0, 0.625, 0, 0.6875)
     frame:GetHighlightTexture():SetBlendMode("ADD")
     
+    frame:SetWidth(frame:GetTextWidth() + 50)
     return frame
 end
 end
