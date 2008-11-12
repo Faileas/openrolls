@@ -119,7 +119,25 @@ local function Create(attributes)
     return box
 end
 
-function Lib.InputPrompt:new(attributes)
+--Acceptable formats:
+--  (attributes)
+--  (text, confirm, [cancel], [name])
+function Lib.InputPrompt:new(...)
+    local first, second, third, fourth = select(1, ...)
+    local attributes
+    if type(first) == "table" then
+        attributes = setmetatable(first, ValidAttributes)
+    else
+        attributes = setmetatable({}, ValidAttributes)
+        attributes.Text = first
+        attributes.ConfirmFunction = second
+        if type(third) == "function" then
+            attributes.CancelFunction = third
+            attributes.Name = fourth
+        else
+            attributes.Name = third
+        end
+    end
     attributes = setmetatable(attributes, ValidAttributes)
     return Create(attributes)
 end
