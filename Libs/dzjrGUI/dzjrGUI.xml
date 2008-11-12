@@ -15,4 +15,5 @@
 <Script file="RadioGroup.lua"/>
 
 <Script file="MessageBox.lua"/>
+<Script file="InputPrompt.lua"/>
 </Ui>

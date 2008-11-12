@@ -87,16 +87,19 @@ function Lib.MessageBox:new(...)
     box:SetScript("OnMouseUp", MouseUp)
 
     local confirm = Lib.Button:new(attributes.ConfirmText, Confirm, nil, box)
+    confirm:SetPoint("BOTTOM", 0, 12)
     local width = confirm:GetWidth() + 24
     if attributes.ShowCancel then
         local cancel = Lib.Button:new(attributes.CancelText, Cancel, nil, box)
-        cancel:SetPoint("BOTTOMRIGHT", box,"BOTTOMRIGHT", -12, 12)
+        cancel:SetPoint("BOTTOM", confirm)
+        cancel:SetPoint("LEFT", box, "CENTER", 20, 0)
+        --cancel:SetPoint("BOTTOMRIGHT", box,"BOTTOMRIGHT", -12, 12)
     
-        confirm:SetPoint("BOTTOMLEFT", 12, 12)
+        confirm:SetPoint("LEFT", box, "CENTER", -20, 0)
 
         width = width + cancel:GetWidth() + 12
     else
-        confirm:SetPoint("BOTTOM", 0, 12)
+        confirm:SetPoint("CENTER")
     end
 
     if width > attributes.Width then attributes.Width = width end
@@ -106,7 +109,7 @@ function Lib.MessageBox:new(...)
     str:SetPoint("TOPLEFT", box, 17, -17)
     str:SetWidth(box:GetRight() - box:GetLeft() - 34)
     str:SetText(attributes.Text)
-    
+
     if attributes.Height then
         box:SetHeight(attributes.Height)
     else
