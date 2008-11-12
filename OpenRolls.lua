@@ -6,27 +6,6 @@ local Group = LibStub("GroupLib-1.0")
 
 local GUI = LibStub("dzjrGUI")
 
-function OpenRolls:TestTest()
-    local att = {    
-        Width = 10,
-        PromptWidth = 500,
-        --ConfirmText = "Confirm",
-        --CancelText = "Cancel",
-        --Font = "GameFontHighlightSmall",
-        ShowCancel = false,
-        --Default = "1234567890",
-        --Numeric = false,
-        --Validate = function(str) return str == "Box" end,
-        CancelFunction = function() ChatFrame1:AddMessage("Cancel") end,
-        ConfirmFunction = function() ChatFrame1:AddMessage("Confirm") end,
-        --Name
-        Text = "This is a really really really really really really really really really really really really really really really really really long string that should loop easily enough",
-        --Height = 1000
-    }
-    local input = GUI.InputPrompt:new(att)
-    input:Show()
-end
-
 OpenRolls.Defaults = {
     ShowSummaryWhenRollsOver = true,
     ShowLootWindows = "whenML",
