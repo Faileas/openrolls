@@ -21,6 +21,7 @@ function Lib.DropdownList:SetText(str)
     self.text:SetText(str)
 end
 
+local count = 0
 local function CreateMenu(self, name, options)
     --Blizzard's menu code requires the frame be named, and I'm too lazy to recreate it.
     if not name then 
@@ -52,7 +53,6 @@ local function ButtonClick(self)
     ToggleDropDownMenu(1, nil, frame.menu, frame, 0, 0)
 end
 
-local count = 0
 --Creates a dropdown menu
 function Lib.DropdownList:new(options, name, parent)
 	local frame = setmetatable(CreateFrame("Frame", name, parent), Lib.DropdownList)
