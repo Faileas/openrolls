@@ -21,6 +21,7 @@ function Lib.DropdownList:SetText(str)
     self.text:SetText(str)
 end
 
+local sorted = {}
 local count = 0
 local function CreateMenu(self, name, options)
     --Blizzard's menu code requires the frame be named, and I'm too lazy to recreate it.
@@ -30,15 +31,21 @@ local function CreateMenu(self, name, options)
     end
     local menu = CreateFrame("Frame", name .. "Menu", self, "UIDropDownMenuTemplate")
     menu.initialize = function()
+        for name in pairs(options) do
+            sorted[#sorted+1] = name
+        end
+        table.sort(sorted)
+        
         local info = UIDropDownMenu_CreateInfo()
-        for name, funct in pairs(options) do
+        for i, name in ipairs(sorted) do            
+            sorted[i] = nil
             info.text = name
             info.value = name
             info.arg1 = menu
             info.func = function()
                 UIDropDownMenu_SetSelectedValue(this.arg1, this.value)
                 self:SetText(this.value)
-                funct()
+                options[name]()
             end
             info.checked = false
             UIDropDownMenu_AddButton(info)
