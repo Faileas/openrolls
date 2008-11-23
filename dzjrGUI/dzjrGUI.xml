@@ -16,5 +16,4 @@
 
 <Script file="MessageBox.lua"/>
 <Script file="InputPrompt.lua"/>
-<Script file="ColorPicker.lua"/>
 </Ui>
