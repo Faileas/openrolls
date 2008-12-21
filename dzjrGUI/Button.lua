@@ -1,7 +1,11 @@
 do
-local Lib, minor = LibStub("dzjrGUI")
+local rev = tonumber(strmatch("$Revision$", "%d+"))
 
-if not Lib or minor > 2 then return end
+local Lib = LibStub("dzjrGUI")
+
+local version = Lib.Versions.Button or 0
+if version >= rev then return end
+Lib.Versions.Button = rev
 
 local setmetatable = setmetatable
 local CreateFrame = CreateFrame

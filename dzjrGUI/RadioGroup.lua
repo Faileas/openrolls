@@ -1,7 +1,10 @@
 do
-local Lib, minor = LibStub("dzjrGUI")
+local Lib = LibStub("dzjrGUI")
+local rev = tonumber(strmatch("$Revision$", "%d+"))
 
-if not Lib or minor > 2 then return end
+local version = Lib.Versions.RadioGroup or 0
+if version >= rev then return end
+Lib.Versions.RadioGroup = rev
 
 local setmetatable = setmetatable
 local pairs = pairs

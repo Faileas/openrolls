@@ -2,9 +2,12 @@
 --  yes is the function that gets called if "Confirm" is pressed
 --  no is the function that gets called if "Cancel" is pressed
 
-local Lib, minor = LibStub("dzjrGUI")
+local Lib = LibStub("dzjrGUI")
+local rev = tonumber(strmatch("$Revision$", "%d+"))
 
-if not Lib or minor > 2 then return end
+local version = Lib.Versions.MessageBox or 0
+if version >= rev then return end
+Lib.Versions.MessageBox = rev
 
 local setmetatable = setmetatable
 local type = type

@@ -5,6 +5,8 @@ local Lib = LibStub:NewLibrary(MAJOR, MINOR)
 
 if not Lib then return end
 
+Lib.Versions = {}
+
 local setmetatable = setmetatable
 local pcall = pcall
 local rawset = rawset
