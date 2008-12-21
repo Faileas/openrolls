@@ -1,5 +1,7 @@
 do
-local Lib = LibStub("dzjrGUI")
+local Lib, minor = LibStub("dzjrGUI")
+
+if not Lib or minor > 2 then return end
 
 local setmetatable = setmetatable
 local tostring = tostring

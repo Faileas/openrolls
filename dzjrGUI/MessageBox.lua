@@ -2,7 +2,9 @@
 --  yes is the function that gets called if "Confirm" is pressed
 --  no is the function that gets called if "Cancel" is pressed
 
-local Lib = LibStub("dzjrGUI")
+local Lib, minor = LibStub("dzjrGUI")
+
+if not Lib or minor > 2 then return end
 
 local setmetatable = setmetatable
 local type = type

@@ -1,6 +1,6 @@
 do
 
-local MAJOR, MINOR = "dzjrGUI", 1
+local MAJOR, MINOR = "dzjrGUI", 2
 local Lib = LibStub:NewLibrary(MAJOR, MINOR)
 
 if not Lib then return end
