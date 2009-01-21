@@ -37,9 +37,17 @@ local function CreateMainConfig(name)
     ConfirmString:SetPoint("CENTER", ConfirmBox, "CENTER")
     ConfirmString:SetPoint("LEFT", ConfirmBox, "RIGHT")
     ConfirmString:SetText("Confirm before looting?")
+    
+    local GreensBox = CreateFrame("CheckButton", name .. "GreensBox", ConfigPanel, "UICheckButtonTemplate")
+    GreensBox:SetPoint("TOPLEFT", ConfirmBox, "BOTTOMLEFT", 0, 0)
+    
+    local GreensString = ConfigPanel:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    GreensString:SetPoint("CENTER", GreensBox, "CENTER")
+    GreensString:SetPoint("LEFT", GreensBox, "RIGHT")
+    GreensString:SetText("Ignore uncommon (green) items when confirming?")
 
     local WarningBox = CreateFrame("CheckButton", name .. "WarningBox", ConfigPanel, "UICheckButtonTemplate")
-    WarningBox:SetPoint("TOPLEFT", ConfirmBox, "BOTTOMLEFT", 0, 0)
+    WarningBox:SetPoint("TOPLEFT", GreensBox, "BOTTOMLEFT", 0, 0)
 
     local WarningString = 
         ConfigPanel:CreateFontString(nil, "OVERLAY", "GameFontNormal")
@@ -84,6 +92,7 @@ local function CreateMainConfig(name)
         WhenShowBox:Click(Data.ShowLootWindows)
         RemindBox:SetChecked(Data.ShowSummaryWhenRollsOver)
         ConfirmBox:SetChecked(Data.ConfirmBeforeLooting)
+        GreensBox:SetChecked(Data.ConfirmGreens)
         WarningBox:SetChecked(Data.Warning)
         MainDuration:SetText(Data.SilentTime)
         SubDuration:SetText(Data.CountdownTime)
@@ -97,6 +106,7 @@ local function CreateMainConfig(name)
                 ShowLootWindows = Data.ShowLootWindows,
                 ShowSummaryWhenRollsOver = Data.ShowSummaryWhenRollsOver,
                 ConfirmBeforeLooting = Data.ConfirmBeforeLooting,
+                ConfirmGreens = Data.ConfirmGreens,
                 Warning = Data.Warning,
                 SilentTime = Data.SilentTime,
                 CountdownTime = Data.CountdownTime
@@ -110,6 +120,7 @@ local function CreateMainConfig(name)
         Data.ShowSummaryWhenRollsOver = not not RemindBox:GetChecked()
         Data.ShowLootWindows = WhenShowBox:GetSetting()
         Data.ConfirmBeforeLooting = not not ConfirmBox:GetChecked()
+        Data.ConfirmGreens = not not GreensBox:GetChecked()
         Data.Warning = not not WarningBox:GetChecked()
         Data.SilentTime = tonumber(MainDuration:GetText())
         Data.CountdownTime = tonumber(SubDuration:GetText()) 
@@ -122,6 +133,7 @@ local function CreateMainConfig(name)
         Data.ShowSummaryWhenRollsOver = nil
         Data.ShowLootWindows = nil
         Data.ConfirmBeforeLooting = nil
+        Data.ConfirmGreens = nil
         Data.Warning = nil
         Data.SilentTime = nil
         Data.CountdownTime = nil
@@ -130,6 +142,7 @@ local function CreateMainConfig(name)
     end
     
     ConfigPanel.cancel = function()
+        print(not not GreensBox:GetChecked())
         local Data = OpenRollsData
         for i,j in pairs(ConfigPanel.OriginalValues) do
             Data[i] = j
