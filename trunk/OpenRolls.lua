@@ -10,6 +10,7 @@ OpenRolls.Defaults = {
     ShowSummaryWhenRollsOver = true,
     ShowLootWindows = "whenML",
     ConfirmBeforeLooting = true,
+    ConfirmGreens = false,
     Disenchanter = "",
     Banker = "",
     Warning = true,
@@ -318,9 +319,12 @@ function OpenRolls:DistributeItemByName(player, window, followup)
     if followup == nil then followup = function(window, player) end end
     local slot = window.slot
     local item = GetLootSlotLink(slot)
+    local rarity = (select(3, GetItemInfo(item)));
+    local confirm = OpenRollsData.ConfirmBeforeLooting 
+                    and ((rarity > 2) or OpenRollsData.ConfirmGreens)
     for i = 1, 40 do
         if GetMasterLootCandidate(i) == player then
-            if OpenRollsData.ConfirmBeforeLooting == true then
+            if confirm then
                 local str = "Do you wish to award " .. item .. " to " .. player .. "?"
                 GUI.MessageBox:new(str, function() GiveMasterLoot(slot, i) 
                                             followup(window, player)
