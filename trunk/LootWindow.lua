@@ -175,14 +175,28 @@ do
         raid:SetScript("OnClick", function(frame, ...)
             local candidates = {}
             local parent = frame:GetParent()
+
+            local item = GetLootSlotLink(parent.slot)
+            local rarity = (select(3, GetItemInfo(item)));
+            local confirm = OpenRollsData.ConfirmBeforeLooting 
+                          and ((rarity > 2) or not OpenRollsData.ConfirmGreens)
             for i = 1, 40 do
                 if GetMasterLootCandidate(i) ~= nil then
                     table.insert(candidates, {index = i, name = GetMasterLootCandidate(i)})
                 end
             end
             local candidate = math.random(#candidates)
-            GiveMasterLoot(parent.slot, candidates[candidate].index)
-            parent.assignName:SetText(candidates[candidate].name)
+            local i = candidates[candidate].index
+            local name = candidates[candidate].name
+            if confirm then
+                local str = "Do you wish to award " .. item .. " to " .. name .. "?"
+                LibStub("dzjrGUI").MessageBox:new(str, 
+                                                  function() GiveMasterLoot(parent.slot, i) end, 
+                                                  function() end)
+            else
+                GiveMasterLoot(parent.slot, i)
+            end
+            parent.assignName:SetText(name)
         end)
         
         local assignName = CreateFrame("EditBox", framename .. "AssignName", self, "InputBoxTemplate")
