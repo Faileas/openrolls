@@ -466,8 +466,10 @@ local framecount = 0
 
 --Create/destroy the loot windows if neccessary
 function OpenRolls:LOOT_OPENED()
-    if OpenRollsData.ShowLootWindows == 'never' then return end
-    if OpenRollsData.ShowLootWindows == 'whenML' and (select(2, GetLootMethod())) ~= 0 then return end
+    local DEBUG = (LibStub("dzjrDebug", true) ~= nil)
+
+    if (not DEBUG) and OpenRollsData.ShowLootWindows == 'never' then return end
+    if (not DEBUG) and (OpenRollsData.ShowLootWindows == 'whenML' and (select(2, GetLootMethod())) ~= 0) then return end
     
     NamesFrame.frame:Show()
     if #lewt > 0 then
@@ -478,7 +480,7 @@ function OpenRolls:LOOT_OPENED()
     lewt = {}
     local threshold = GetLootThreshold()
     for i = 1, GetNumLootItems() do
-        if (select(4, GetLootSlotInfo(i))) >= threshold then
+        if DEBUG or (select(4, GetLootSlotInfo(i))) >= threshold then
             local item = OpenRolls:CreateLootWindow("OpenRollsLootWindow" .. framecount, UIParent, i)
             framecount = framecount + 1
             for _, j in pairs(AttachedLootWindows) do
