@@ -321,7 +321,7 @@ function OpenRolls:DistributeItemByName(player, window, followup)
     local item = GetLootSlotLink(slot)
     local rarity = (select(3, GetItemInfo(item)));
     local confirm = OpenRollsData.ConfirmBeforeLooting 
-                    and ((rarity > 2) or OpenRollsData.ConfirmGreens)
+                    and ((rarity > 2) or not OpenRollsData.ConfirmGreens)
     for i = 1, 40 do
         if GetMasterLootCandidate(i) == player then
             if confirm then
