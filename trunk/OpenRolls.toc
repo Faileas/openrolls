@@ -1,7 +1,7 @@
 ## Interface: 30000
 ## Title: OpenRolls
 ## Author: Dennis Zickefoose, Jr
-## Version: 1.04
+## Version: 1.05
 ## Notes: Master loot simplification
 ## eMail: dennis.zickefoose@gmail.com
 ## URL: http://openrolls.googlecode.com/
