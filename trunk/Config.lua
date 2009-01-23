@@ -142,7 +142,6 @@ local function CreateMainConfig(name)
     end
     
     ConfigPanel.cancel = function()
-        print(not not GreensBox:GetChecked())
         local Data = OpenRollsData
         for i,j in pairs(ConfigPanel.OriginalValues) do
             Data[i] = j
