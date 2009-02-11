@@ -1,7 +1,6 @@
 OpenRolls = LibStub("AceAddon-3.0"):NewAddon("OpenRolls", 
     "AceConsole-3.0", "AceEvent-3.0", "AceTimer-3.0", "GroupLib-1.0", "Countdown-1.0")
 
---I think this can be removed?  I really shouldn't have included a library I wrote as an expriment ><
 local Group = LibStub("GroupLib-1.0")
 
 local GUI = LibStub("dzjrGUI")
