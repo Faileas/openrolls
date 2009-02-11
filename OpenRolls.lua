@@ -24,7 +24,7 @@ OpenRolls.Defaults = {
     NameFramesOffset = {horizontal = 61, vertical = -13},
     NameFramesAnchorFrame = "LootFrame",
     NameFramesAnchorFrom = "BOTTOMLEFT",
-    NameFramesAnchorTo = "TOPLEFT"
+    NameFramesAnchorTo = "TOPLEFT",
 }
 
 --Regex that matches an item link
